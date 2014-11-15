@@ -49,3 +49,27 @@ Key : `Create Room`
 ```
 
 ### Transmittable
+
+#### ROOM_CREATED
+
+Key : `Room Created`
+
+#### ROOM_CREATE_FAILED
+
+Key : `Room Creat Failed`
+
+#### ROOM_UPDATED
+
+Key : `Room Updated`
+
+#### ROOM_JOINED
+
+Key : `Room Joined`
+
+#### ROOM_JOIN_FAILED 
+
+Key : `Room Join Failed`
+
+#### ALIAS_SET 
+
+Key : `Alias Set`

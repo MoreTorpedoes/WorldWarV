@@ -16,6 +16,7 @@ TRANSMIT_ROOM_CREATE_FAILED = 'Room Create Failed'
 TRANSMIT_ROOM_UPDATED = 'Room Updated'
 TRANSMIT_ROOM_JOINED = 'Room Joined'
 TRANSMIT_ROOM_JOIN_FAILED = 'Room Join Failed'
+TRANSMIT_ALIAS_SET = 'Alias Set'
 
 users = {}
 rooms = {}
@@ -51,7 +52,8 @@ module.exports = ->
     # sets the alias field of the users
     router.on RECIEVE_SET_ALIAS, (data) ->
       # set the users alias
-      users[spark.id].alias = data.alias 
+      users[spark.id].alias = data.alias
+      users[spark.id].router.transmit(TRANSMIT_ALIAS_SET, users[spark.id])
 
     # creates a room and ads the user that created
     # the room to the room. 
