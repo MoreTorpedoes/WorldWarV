@@ -10,6 +10,7 @@ RECIEVE_CREATE_ROOM = 'Create Room'
 RECIEVE_JOIN_ROOM = 'Join Room'
 #RECIEVE_LIST_ROOM = 'List Room'
 RECIEVE_SET_ALIAS = 'Set Alias'
+RECIEVE_LEAVE_ROOM = 'Leave Room'
 
 # events transmittable
 TRANSMIT_ROOM_CREATED = 'Room Created'
@@ -21,6 +22,12 @@ TRANSMIT_ALIAS_SET = 'Alias Set'
 
 users = {}
 rooms = {}
+
+# this is used to remove the circular refs caused
+# by a room having users and a user having a room
+summerizeUser = (user) ->
+  id: user.id
+  alias: user.alias
 
 module.exports = -> # main
 
@@ -49,32 +56,28 @@ module.exports = -> # main
 
     # sets the alias field of the users
     spark.on RECIEVE_SET_ALIAS, (data) ->
-      console.log "RECIEVE_SET_ALIAS"
-      
       user.alias = data.alias # set the users alias
       spark.emit(TRANSMIT_ALIAS_SET, user)
 
     # creates a room and ads the user that created
     # the room to the room. 
     spark.on RECIEVE_CREATE_ROOM, (data) ->
-      console.log "RECIEVE_CREATE_ROOM"
-      
       user.room = room = rooms[data.name] = { # create the room
         name: data.name
-        users: [user]
+        users: [summerizeUser user]
       }
       # emit an event stating the room has been created
-      spark.emit(TRANSMIT_ROOM_CREATED)
+      spark.emit(TRANSMIT_ROOM_CREATED, room)
 
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
     spark.on RECIEVE_JOIN_ROOM, (data) ->
       room = user.room = rooms[data.name] # room joining
 
-      room.users.push(users[spark.id])
-      room.users.forEach (user) -> # push current state of room
-        if user.id != spark.id
-          user.spark.emit(TRANSMIT_ROOM_UPDATED, room)
+      room.users.push(summerizeUser user)
+      room.users.forEach (roomUser) -> # push current state of room
+        if roomUser.id != spark.id
+          users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
       # inform the requesting user they have joined the room
       spark.emit(TRANSMIT_ROOM_JOINED, room)
 

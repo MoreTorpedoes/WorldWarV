@@ -6,7 +6,12 @@
 	<body>
 		<h3>Alias : <span id='aliasOutput'></span></h3>
 		<input id='aliasInput' type="text" name="alias">
-		<button onclick='setAlias()'>Set Alias</button>
+		<button onclick='setAlias();'>Set Alias</button>
+
+		<h3>Room : <span id='roomNameOutput'></span> (<span id='numberOfUsers'></span>)</h3>
+		<input id='roomNameInput' type="text" name="alias">
+		<button onclick='createRoom();'>Create Room</button>
+		<button onclick='joinRoom();'>Join Room</button>
 
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script>
@@ -14,6 +19,7 @@
 				TRANSMIT_CREATE_ROOM: 'Create Room',
 				TRANSMIT_JOIN_ROOM: 'Join Room',
 				TRANSMIT_SET_ALIAS: 'Set Alias',
+				TRANSMIT_LEAVE_ROOM: 'Leave Room',
 
 				// events recievable
 				RECIEVE_ROOM_CREATED: 'Room Created',
@@ -23,17 +29,33 @@
 				RECIEVE_ROOM_JOIN_FAILED: 'Room Join Failed',
 				RECIEVE_ALIAS_SET: 'Alias Set'
 			};
-
 			var primus = new Primus("http://localhost:8080");
-
-			primus.on(WWVEvents.RECIEVE_ALIAS_SET, function (data) {
-				$('#aliasOutput').text(data.alias);
-			});
 
 			function setAlias() {
 				primus.emit(WWVEvents.TRANSMIT_SET_ALIAS, {
 					alias: $('#aliasInput').val()
 				});				
+			}
+			primus.on(WWVEvents.RECIEVE_ALIAS_SET, function (data) {
+				$('#aliasOutput').text(data.alias);
+			});
+
+			function createRoom() {
+				console.log('create room');
+				primus.emit(WWVEvents.TRANSMIT_CREATE_ROOM, {
+					name: $('#roomNameInput').val()
+				});
+			}
+			primus.on(WWVEvents.RECIEVE_ROOM_CREATED, function (data) {
+				console.log('room created');
+				$('#roomNameOutput').text(data.name);
+				$('#numberOfUsers').text(data.users.length)
+			});
+
+			function joinRoom() {
+				primus.emit(WWVEvents.TRANSMIT_JOIN_ROOM, {
+					name: $('#roomNameInput').val()
+				});
 			}
 		</script>
 	</body>
