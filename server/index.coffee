@@ -1,13 +1,15 @@
 'use strict'
 
-Router = require 'router'
+http    = require 'http'
+Primus  = require 'primus'
+Router  = require './router'
 
 SERVER_PORT = 8080
 
 # events recievable
 RECIEVE_CREATE_ROOM = 'Create Room'
 RECIEVE_JOIN_ROOM = 'Join Room'
-RECIEVE_ROOM_ROOM = 'List Room'
+#RECIEVE_LIST_ROOM = 'List Room'
 RECIEVE_SET_ALIAS = 'Set Alias'
 
 # events transmittable
@@ -21,27 +23,24 @@ TRANSMIT_ALIAS_SET = 'Alias Set'
 users = {}
 rooms = {}
 
-module.exports = ->
-  # main
-  console.log 'World War V has begun >:o)'
-
-  Primus = require 'primus'
-  http = require 'http'
+module.exports = -> # main
 
   server = http.createServer()
   primus = new Primus server, {
     # config options go here
   }
   # save the client side library 
-  primus.save("./client/primus.js");
+  primus.save "client/primus/primus.js"
 
   # a new connection has been recieved
   primus.on 'connection', (spark) ->
+    console.log "Connection recieved from #{spark.id}"
     # initialise a new user
-    users[spark.id] = {
+    router = new Router(spark)
+    user = users[spark.id] = {
       id: spark.id
       alias: spark.id
-      router: new Router(spark)
+      router: router
     }
     # use our router class to route named events
     spark.on 'data', user.router.route
@@ -52,27 +51,26 @@ module.exports = ->
     # sets the alias field of the users
     router.on RECIEVE_SET_ALIAS, (data) ->
       # set the users alias
-      users[spark.id].alias = data.alias
-      users[spark.id].router.transmit(TRANSMIT_ALIAS_SET, users[spark.id])
+      user.alias = data.alias
+      user.router.transmit(TRANSMIT_ALIAS_SET, users[spark.id])
 
     # creates a room and ads the user that created
     # the room to the room. 
     router.on RECIEVE_CREATE_ROOM, (data) ->
       console.log "#{spark.id} recieved from #{data}"
       
-      user = users[spark.id]
-      room = rooms[data.name] = { # create the room
+      user.room = room = rooms[data.name] = { # create the room
         name: data.name
         users: [user]
       }
-      user.room = room # assign the room to the user
       # emit an event stating the room has been created
       user.router.transmit(TRANSMIT_ROOM_CREATED)
 
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
     router.on RECIEVE_JOIN_ROOM, (data) ->
-      room = rooms[data.name] # room joining
+      room = users[spark.id].room = rooms[data.name] # room joining
+
       room.users.push(users[spark.id])
       room.users.forEach (user) -> # push current state of room
         if user.id != spark.id
@@ -85,5 +83,5 @@ module.exports = ->
     room = users[spark.id].room
     delete users[spark.id]
 
-  server SERVER_PORT, ->
-    console.log "Serving from localhost:#{SERVER_PORT}"
+  server.listen SERVER_PORT, ->
+    console.log "World War V has begun on port #{SERVER_PORT} >:o)"

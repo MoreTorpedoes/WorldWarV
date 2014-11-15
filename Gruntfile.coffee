@@ -9,14 +9,23 @@ module.exports = (grunt) ->
 
     watch: 
       options:
-        livereload: true
+        livereload: '<%= connect.options.livereload %>'
+      
       client: 
         files: [
           './client/**/*'
         ]
-        tasks: []
-        options: 
-          livereload: '<%= connect.options.livereload %>'
+      
+      server: 
+        files: [
+          './server/**/*'
+        ]
+      
+      bower: 
+        files: [
+          './bower_components/**/*'
+        ]
+    # end watch
 
     connect: 
       options:
@@ -24,20 +33,32 @@ module.exports = (grunt) ->
         hostname: 'localhost'
         livereload: 35729
       
-      livereload:
+      client:
         options: 
           open: true
           middleware: (connect) ->
             return [
               connect.static '.tmp'
               connect().use '/bower_components', connect.static('./bower_components')
-              connect.static 'client'
+              connect.static './client'
             ]
+
+      server:
+        options:
+          open: true
+          middleware: (connect) ->
+            return [
+              connect.static '.tmp'
+              connect().use '/bower_components', connect.static('./bower_components')
+              connect.static './client'
+              connect.static './server'
+            ]
+    # end connect
   }
 
   grunt.registerTask 'serve', 'Compile and then start the connect web server.', (target) ->
 
     grunt.task.run [
-      'connect:livereload'
+      "connect:#{target}"
       'watch'
     ]

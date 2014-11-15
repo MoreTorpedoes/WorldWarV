@@ -1,0 +1,20 @@
+<html>
+	<head>
+		<script src="//localhost:35729/livereload.js"></script>
+		<script src="primus/primus.js"></script>
+	</head>
+	<body>
+		Hello World!
+
+		<script>
+			var primus = new Primus("http://localhost:8080");
+			primus.on('connection', function () {
+
+			});
+
+			primus.on('data', function (data) {
+				console.log('Data recieved.');
+			});
+		</script>
+	</body>
+</html>
