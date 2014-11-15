@@ -4,17 +4,32 @@
 		<script src="primus/primus.js"></script>
 	</head>
 	<body>
-		Hello World!
+		<h3>Alias : <span id='aliasOutput'></span></h3>
+		<input id='aliasInput' type="text" name="alias">
+		<button onclick='setAlias()'>Set Alias</button>
 
+		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script>
 			var primus = new Primus("http://localhost:8080");
-			primus.on('connection', function () {
-
-			});
 
 			primus.on('data', function (data) {
 				console.log('Data recieved.');
+				console.log(data);
+
+				$('#aliasOutput').text(data.data.alias);
 			});
+
+			function setAlias() {
+				var alias = $('#aliasInput').val();
+				console.log('Set alias : ' + alias);
+
+				primus.write({
+					event: 'Set Alias',
+					data: {
+						alias: alias
+					}
+				});
+			}
 		</script>
 	</body>
 </html>
