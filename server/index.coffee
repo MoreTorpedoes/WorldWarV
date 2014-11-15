@@ -4,6 +4,11 @@ Router = require 'router'
 
 SERVER_PORT = 8080
 
+CREATE_ROOM = 'Create Room'
+JOIN_ROOM = 'Join Room'
+LIST_ROOM = 'List Room'
+SET_ALIAS = 'Set Alias'
+
 user = {}
 room = {}
 
