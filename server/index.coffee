@@ -12,7 +12,10 @@ RECIEVE_SET_ALIAS = 'Set Alias'
 
 # events transmittable
 TRANSMIT_ROOM_CREATED = 'Room Created'
-TRANSMIT_ROOM_CREATE_FAILED = 'Room Creation Failed'
+TRANSMIT_ROOM_CREATE_FAILED = 'Room Create Failed'
+TRANSMIT_ROOM_UPDATED = 'Room Updated'
+TRANSMIT_ROOM_JOINED = 'Room Joined'
+TRANSMIT_ROOM_JOIN_FAILED = 'Room Join Failed'
 
 users = {}
 rooms = {}
@@ -67,8 +70,13 @@ module.exports = ->
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
     router.on RECIEVE_JOIN_ROOM, (data) ->
-      user = users[spark.id]
-      rooms[data.name].users.push(user)
+      room = rooms[data.name] # room joining
+      room.users.push(users[spark.id])
+      room.users.forEach (user) -> # push current state of room
+        if user.id != spark.id
+          user.router.transmit(TRANSMIT_ROOM_UPDATED, room)
+      # inform the requesting user they have joined the room
+      users[spark.id].router.transmit(TRANSMIT_ROOM_JOINED, room)
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->
