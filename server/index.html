@@ -10,25 +10,30 @@
 
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script>
+			var WWVEvents = {
+				TRANSMIT_CREATE_ROOM: 'Create Room',
+				TRANSMIT_JOIN_ROOM: 'Join Room',
+				TRANSMIT_SET_ALIAS: 'Set Alias',
+
+				// events recievable
+				RECIEVE_ROOM_CREATED: 'Room Created',
+				RECIEVE_ROOM_CREATE_FAILED: 'Room Create Failed',
+				RECIEVE_ROOM_UPDATED: 'Room Updated',
+				RECIEVE_ROOM_JOINED: 'Room Joined',
+				RECIEVE_ROOM_JOIN_FAILED: 'Room Join Failed',
+				RECIEVE_ALIAS_SET: 'Alias Set'
+			};
+
 			var primus = new Primus("http://localhost:8080");
 
-			primus.on('data', function (data) {
-				console.log('Data recieved.');
-				console.log(data);
-
-				$('#aliasOutput').text(data.data.alias);
+			primus.on(WWVEvents.RECIEVE_ALIAS_SET, function (data) {
+				$('#aliasOutput').text(data.alias);
 			});
 
 			function setAlias() {
-				var alias = $('#aliasInput').val();
-				console.log('Set alias : ' + alias);
-
-				primus.write({
-					event: 'Set Alias',
-					data: {
-						alias: alias
-					}
-				});
+				primus.emit(WWVEvents.TRANSMIT_SET_ALIAS, {
+					alias: $('#aliasInput').val()
+				});				
 			}
 		</script>
 	</body>

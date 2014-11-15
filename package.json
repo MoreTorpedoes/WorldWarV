@@ -15,6 +15,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "load-grunt-tasks": "^1.0.0",
     "primus": "^2.4.10",
+    "primus-emit": "^0.1.2",
     "time-grunt": "^1.0.0",
     "websockets": "^0.2.0",
     "ws": "^0.4.32"

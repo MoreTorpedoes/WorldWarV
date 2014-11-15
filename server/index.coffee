@@ -28,22 +28,14 @@ module.exports = -> # main
   primus = new Primus server, {
     # config options go here
   }
+  primus.use('emit', require('primus-emit'))
+
   # save the client side library 
   primus.save "client/primus/primus.js"
 
   # a new connection has been recieved
   primus.on 'connection', (spark) ->
     console.log "Connection recieved from #{spark.id}"
-
-    # setup our spark object
-    spark.on 'data', (data) ->
-      @emit data.event, data.data
-
-    spark.transmit = (event, data) ->
-      @write {
-        event: event
-        data: data
-      }
 
     # initialise a new user
     user = users[spark.id] = {
@@ -60,7 +52,7 @@ module.exports = -> # main
       console.log "RECIEVE_SET_ALIAS"
       
       user.alias = data.alias # set the users alias
-      spark.transmit(TRANSMIT_ALIAS_SET, user)
+      spark.emit(TRANSMIT_ALIAS_SET, user)
 
     # creates a room and ads the user that created
     # the room to the room. 
@@ -72,7 +64,7 @@ module.exports = -> # main
         users: [user]
       }
       # emit an event stating the room has been created
-      spark.transmit(TRANSMIT_ROOM_CREATED)
+      spark.emit(TRANSMIT_ROOM_CREATED)
 
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
@@ -82,9 +74,9 @@ module.exports = -> # main
       room.users.push(users[spark.id])
       room.users.forEach (user) -> # push current state of room
         if user.id != spark.id
-          user.spark.transmit(TRANSMIT_ROOM_UPDATED, room)
+          user.spark.emit(TRANSMIT_ROOM_UPDATED, room)
       # inform the requesting user they have joined the room
-      spark.transmit(TRANSMIT_ROOM_JOINED, room)
+      spark.emit(TRANSMIT_ROOM_JOINED, room)
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->

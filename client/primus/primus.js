@@ -1727,4 +1727,39 @@ if (
     Primus.prototype.AVOID_WEBSOCKETS = true;
   }
 }
+Primus.prototype.ark["emit"] = function client(primus) {
+  var toString = Object.prototype.toString
+    , emit = primus.emit;
+
+  primus.transform('incoming', function incoming(packet) {
+    var data = packet.data;
+
+    if (
+         'object' !== typeof data                       // Events are objects.
+      || !~toString.call(data.emit).indexOf(' Array]')  // Not an emit object.
+    ) {
+      return;
+    }
+
+    //
+    // Check if we've received an event that is already used internally.
+    // We use our previously saved `emit` function to emit the event so we
+    // prevent recursion and message flood.
+    //
+    if (!this.reserved(data.emit[0])) emit.apply(primus, data.emit);
+
+    return false;
+  });
+
+  primus.emit = function emitter(event) {
+    if (
+         primus.reserved(event)
+      || 'newListener' === event
+      || 'removeListener' === event
+    ) return emit.apply(this, arguments);
+
+    primus.write({ emit: Array.prototype.slice.call(arguments, 0) });
+    return true;
+  };
+};
  return Primus; });
