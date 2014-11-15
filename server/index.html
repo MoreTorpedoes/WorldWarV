@@ -4,6 +4,8 @@
 		<script src="primus/primus.js"></script>
 	</head>
 	<body>
+		<h4 text-color='red'> Error : <span id='error'></span></h4>
+
 		<h3>Alias : <span id='aliasOutput'></span></h3>
 		<input id='aliasInput' type="text" name="alias">
 		<button onclick='setAlias();'>Set Alias</button>
@@ -12,7 +14,7 @@
 		<input id='roomNameInput' type="text" name="alias">
 		<button onclick='createRoom();'>Create Room</button>
 		<button onclick='joinRoom();'>Join Room</button>
-
+		
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script>
 			var WWVEvents = {
@@ -41,15 +43,19 @@
 			});
 
 			function createRoom() {
-				console.log('create room');
+				//console.log('create room');
 				primus.emit(WWVEvents.TRANSMIT_CREATE_ROOM, {
 					name: $('#roomNameInput').val()
 				});
 			}
 			primus.on(WWVEvents.RECIEVE_ROOM_CREATED, function (data) {
-				console.log('room created');
+				//console.log('room created');
 				$('#roomNameOutput').text(data.name);
-				$('#numberOfUsers').text(data.users.length)
+				$('#numberOfUsers').text(data.users.length);
+			});
+			primus.on(WWVEvents.RECIEVE_ROOM_CREATE_FAILED, function (error) {
+				//console.log('room error');
+				$('#error').text(error.message);
 			});
 
 			function joinRoom() {
@@ -57,6 +63,17 @@
 					name: $('#roomNameInput').val()
 				});
 			}
+			primus.on(WWVEvents.RECIEVE_ROOM_JOINED, function (data) {
+				$('#roomNameOutput').text(data.name);
+				$('#numberOfUsers').text(data.users.length);
+			});
+			primus.on(WWVEvents.RECIEVE_ROOM_UPDATED, function (data) {
+				$('#numberOfUsers').text(data.users.length);
+			});
+			primus.on(WWVEvents.RECIEVE_ROOM_JOIN_FAILED, function (error) {
+				console.log('aw yeah');
+				$('#error').text(error.message);
+			});
 		</script>
 	</body>
 </html>

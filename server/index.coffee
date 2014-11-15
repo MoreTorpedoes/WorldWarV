@@ -62,24 +62,40 @@ module.exports = -> # main
     # creates a room and ads the user that created
     # the room to the room. 
     spark.on RECIEVE_CREATE_ROOM, (data) ->
-      user.room = room = rooms[data.name] = { # create the room
-        name: data.name
-        users: [summerizeUser user]
-      }
-      # emit an event stating the room has been created
-      spark.emit(TRANSMIT_ROOM_CREATED, room)
+      # ensure the room name isn't already taken
+      if data.name not of rooms
+        user.room = room = rooms[data.name] = { # create the room
+          name: data.name
+          users: [summerizeUser user]
+        }
+        # emit an event stating the room has been created
+        spark.emit(TRANSMIT_ROOM_CREATED, room)
+      else 
+        spark.emit(TRANSMIT_ROOM_CREATE_FAILED, {
+          message: "#{data.name} is already taken."
+        })
 
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
     spark.on RECIEVE_JOIN_ROOM, (data) ->
-      room = user.room = rooms[data.name] # room joining
+      # if the room exists
+      #console.log data.name of rooms
+      #console.log ((summerizeUser(user) not in rooms[data.name].users))
 
-      room.users.push(summerizeUser user)
-      room.users.forEach (roomUser) -> # push current state of room
-        if roomUser.id != spark.id
-          users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
-      # inform the requesting user they have joined the room
-      spark.emit(TRANSMIT_ROOM_JOINED, room)
+      if data.name of rooms and (summerizeUser(user) not in rooms[data.name].users)
+        user.room = room = rooms[data.name] # room joining
+        
+        room.users.push(summerizeUser user)
+        room.users.forEach (roomUser) -> # push current state of room
+          if roomUser.id != spark.id
+            #console.log users[roomUser.id] 
+            users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
+        # inform the requesting user they have joined the room
+        spark.emit(TRANSMIT_ROOM_JOINED, room)
+      else
+        spark.emit(TRANSMIT_ROOM_JOIN_FAILED, {
+          message: "#{data.name} is not a valid room."
+        })
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->
