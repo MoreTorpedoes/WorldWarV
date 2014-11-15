@@ -16,7 +16,9 @@
 **Note :** The format of the event data documented bellow assumes
 the above defined wrapper, with the key set as specified.
 
-### SET_ALIAS
+### Recievable
+
+#### SET_ALIAS
 
 Key : `Set Alias`
 
@@ -26,7 +28,7 @@ Key : `Set Alias`
 }
 ```
 
-### JOIN_ROOM
+#### JOIN_ROOM
 
 Key : `Join Room`
 
@@ -36,7 +38,7 @@ Key : `Join Room`
 }
 ```
 
-### CREATE_ROOMS
+#### CREATE_ROOMS
 
 Key : `Create Room`
 
@@ -45,3 +47,5 @@ Key : `Create Room`
 	name: 'string'
 }
 ```
+
+### Transmittable

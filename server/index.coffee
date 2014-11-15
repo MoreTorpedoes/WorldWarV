@@ -4,13 +4,18 @@ Router = require 'router'
 
 SERVER_PORT = 8080
 
-CREATE_ROOM = 'Create Room'
-JOIN_ROOM = 'Join Room'
-LIST_ROOM = 'List Room'
-SET_ALIAS = 'Set Alias'
+# events recievable
+RECIEVE_CREATE_ROOM = 'Create Room'
+RECIEVE_JOIN_ROOM = 'Join Room'
+RECIEVE_ROOM_ROOM = 'List Room'
+RECIEVE_SET_ALIAS = 'Set Alias'
 
-user = {}
-room = {}
+# events transmittable
+TRANSMIT_ROOM_CREATED = 'Room Created'
+TRANSMIT_ROOM_CREATE_FAILED = 'Room Creation Failed'
+
+users = {}
+rooms = {}
 
 module.exports = ->
   # main
@@ -23,35 +28,52 @@ module.exports = ->
   primus = new Primus server, {
     # config options go here
   }
-
   # save the client side library 
   primus.save("./client/primus.js");
 
+  # a new connection has been recieved
   primus.on 'connection', (spark) ->
     # initialise a new user
-    user[spark.id] = {
-      alias: spark.id   
+    users[spark.id] = {
+      id: spark.id
+      alias: spark.id
+      router: new Router(spark)
     }
     # use our router class to route named events
-    router = new Router(spark)
-    spark.on 'data', router.route
+    spark.on 'data', user.router.route
 
     # --------------------
     # define our routing
 
-    router.on SET_ALIAS, (data) ->
+    # sets the alias field of the users
+    router.on RECIEVE_SET_ALIAS, (data) ->
       # set the users alias
-      user[spark.id].alias = data.alias 
+      users[spark.id].alias = data.alias 
 
-    router.on CREATE_ROOM, (data) ->
+    # creates a room and ads the user that created
+    # the room to the room. 
+    router.on RECIEVE_CREATE_ROOM, (data) ->
       console.log "#{spark.id} recieved from #{data}"
-      room[data.name] = {
+      
+      user = users[spark.id]
+      room = rooms[data.name] = { # create the room
         name: data.name
-        users: [spark.id]
+        users: [user]
       }
+      user.room = room # assign the room to the user
+      # emit an event stating the room has been created
+      user.router.transmit(TRANSMIT_ROOM_CREATED)
 
-    router.on JOIN_ROOM, (data) ->
-      room[data.name].users.push(data.userId)
+    # ads a user to a room and notifies all users in
+    # the room the new user has joined the room
+    router.on RECIEVE_JOIN_ROOM, (data) ->
+      user = users[spark.id]
+      rooms[data.name].users.push(user)
+
+  # handle disconnect
+  primus.on 'disconnection', (spark) ->
+    room = users[spark.id].room
+    delete users[spark.id]
 
   server SERVER_PORT, ->
     console.log "Serving from localhost:#{SERVER_PORT}"

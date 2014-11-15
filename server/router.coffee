@@ -8,3 +8,9 @@ module.exports =
 
     route: (data) ->
       @emit data.event, data.data
+
+    transmit: (event, data=true) ->
+      @spark.write {
+        event: event
+        data: data
+      }

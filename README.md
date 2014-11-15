@@ -1,6 +1,6 @@
 # World War V
 
-> Our slogan
+> The HTML5 Volta Style total nuclear war simulator 2015.
 
 ## Installation
 
