@@ -25,7 +25,9 @@ WWVEvents = {
   GET_USER: 'get user',
   USER: 'send user',
 
-  ROOM_UPDATED: 'room updated'
+  ROOM_UPDATED: 'room updated',
+  USER_NUKE: 'user nuke',
+  BLOW_SHIT_UP: 'blow shit up'
 }
 
 users = {}
@@ -149,6 +151,13 @@ module.exports = -> # main
     spark.on WWVEvents.GET_USER, -> 
       console.log 'GET_USER'
       spark.emit WWVEvents.USER, user
+
+    spark.on WWVEvents.USER_NUKE, (nuke) ->
+      user.room.nukes = user.room.nukes || []
+      user.room.nukes.push(nuke)
+      if user.room.nukes.length == user.room.users.length
+        user.room.users.forEach (roomUser) ->
+          users[roomUser.id].spark.emit(WWVEvents.BLOW_SHIT_UP, user.room.nukes)
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->

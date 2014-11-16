@@ -20,7 +20,8 @@ var WWVEvents = {
   USER: 'send user',
 
   ROOM_UPDATED: 'room updated',
-  USER_READY: 'user ready'
+  USER_NUKE: 'user nuke',
+  BLOW_SHIT_UP: 'blow shit up'
 };
 var primus = new Primus("http://localhost:8080");
 
@@ -287,9 +288,20 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
             GS.picking = false;
             wwv.game_state.waiting = true;
 
-            primus.emit(WWVEvents.USER_READY, nuke);
+            primus.emit(WWVEvents.USER_NUKE, nuke);
         }
     }
   };
-  //primus.on(WWVEvents)
+  primus.on(WWVEvents.BLOW_SHIT_UP, function (nukes) {
+    var GS = wwv.game_state;
+    var M = wwv.map;
+    GS.picking = false;
+    GS.waiting = false;
+    GS.nukes = nukes;
+    GS.nukeStart = wwv.game.time.now / 1000.0;
+    GS.selMine = null;
+    GS.selOther = null;
+    GS.selTraj = null;
+    wwv.fireInfo = null;
+  });
 });
