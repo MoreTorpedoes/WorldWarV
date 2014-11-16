@@ -109,7 +109,10 @@ module.exports = -> # main
               room: room
             })
         # inform the requesting user they have joined the room
-        spark.emit(WWVEvents.ROOM_JOINED, room)
+        spark.emit(WWVEvents.ROOM_JOINED, {
+          teamNumber: user.teamNumber
+          room: room
+        })
       else
         spark.emit(WWVEvents.ROOM_JOIN_FAILED, {
           message: "#{data.name} is not a valid room."

@@ -172,6 +172,10 @@ angular.module('WorldWarV').controller('RoomCtrl', function ($log, $scope, $root
 
     wwv.game_state.myTeam = data.teamNumber;
 
+    wwv.map = room.map;
+    wwv.clouds = room.clouds;
+    wwv.atr = room.atr;
+
     wwv.mapImg = wwv.render_map(room.map);
     wwv.cityImage = wwv.render_cities(room.map);
     wwv.prtImage = wwv.render_particles();
@@ -196,6 +200,12 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
     $rootScope.user = user;
     $rootScope.$apply();
   });
+
+  // listen for user to join the room
+  primus.on(WWVEvents.ROOM_UPDATED, function (data) {
+    $rootScope.room = data.room;
+    $scope.$apply();
+  })
 
   function setPicking () {
     $scope.state = 'picking';
@@ -271,6 +281,9 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
               'dmg': 2500000 / (Math.max(10, Math.pow(dmg,2)/25)-10+1),
               dmgC: GS.selOther
             };
+            // hack to assert a building is destroyed on all computers
+            if ((M.C[GS.selOther[0]].CIT[GS.selOther[1]].cpop - nuke.dmg) <= 10.0)
+                nuke.dmg = 1000000000;
             GS.picking = false;
             wwv.game_state.waiting = true;
 
