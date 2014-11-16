@@ -33,9 +33,10 @@ rooms = {}
 
 # this is used to remove the circular refs caused
 # by a room having users and a user having a room
-summerizeUser = (user) ->
+summerizeUser = (user, teamNumber) ->
   id: user.id
   alias: user.alias
+  teamNumber: teamNumber
 
 module.exports = -> # main
 
@@ -72,9 +73,14 @@ module.exports = -> # main
     spark.on WWVEvents.CREATE_ROOM, (data) ->
       # ensure the room name isn't already taken
       if data.name not of rooms
+        user.teamNumber = 0
         user.room = room = rooms[data.name] = { # create the room
           name: data.name
-          users: [summerizeUser user]
+          users: [summerizeUser(user, 0)]
+
+          map: data.map
+          clouds: data.clouds
+          atr: data.atr
         }
         # emit an event stating the room has been created
         spark.emit(WWVEvents.ROOM_CREATED, room)
@@ -90,14 +96,18 @@ module.exports = -> # main
       #console.log data.name of rooms
       #console.log ((summerizeUser(user) not in rooms[data.name].users))
 
-      if data.name of rooms and (summerizeUser(user) not in rooms[data.name].users)
+      if data.name of rooms and (summerizeUser(user, rooms[data.name].users.length) not in rooms[data.name].users)
         user.room = room = rooms[data.name] # room joining
         
-        room.users.push(summerizeUser user)
+        user.teamNumber = room.users.length
+        room.users.push(summerizeUser(user, room.users.length))
         room.users.forEach (roomUser) -> # push current state of room
           if roomUser.id != spark.id
             #console.log users[roomUser.id] 
-            users[roomUser.id].spark.emit(WWVEvents.ROOM_UPDATED, room)
+            users[roomUser.id].spark.emit(WWVEvents.ROOM_UPDATED, {
+              teamNumber: user.teamNumber
+              room: room
+            })
         # inform the requesting user they have joined the room
         spark.emit(WWVEvents.ROOM_JOINED, room)
       else

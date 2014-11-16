@@ -34,12 +34,14 @@ wwv.game_state = {
     titleScreen: true,
     started: false,
     picking: true,
+    waiting: false,
     myTeam: 0,
     selMine: null,
     selOther: null,
     selTraj: null,
     nukes: null,
-    nukeStart: null
+    nukeStart: null,
+    inLobby: false
 };
 
 wwv.fireInfo = null;
@@ -100,6 +102,8 @@ wwv.update = function ( )
     if (wwv.lastTimeMain !== null)
         dt = time - wwv.lastTimeMain;
     wwv.lastTimeMain = time;
+
+    if (!wwv.game_state.inLobby) return;
 
     var game = wwv.game;
     var hasClicked = !game.input.mousePointer.isDown && this.lastDown;
@@ -217,7 +221,10 @@ wwv.update = function ( )
     }
     else if (wwv.fireInfo)
     {
-        wwv.fireInfo.t += dt * wwv.fireInfo.dir;
+        if (!wwv.game_state.waiting) {
+            wwv.fireInfo.t += dt * wwv.fireInfo.dir;
+        }
+        
         if (wwv.fireInfo.dir > 0 && wwv.fireInfo.t > wwv.fireInfo.maxT)
         {
             wwv.fireInfo.t = wwv.fireInfo.maxT;
@@ -247,7 +254,7 @@ wwv.update = function ( )
 
         wwv.cityImage = wwv.render_cities(wwv.map, wwv.cityImage, HL, wwv.game_state.selTraj);
     }
-    
+
     var map = wwv.map;
     for (var i=0; i<map.C.length; i++)
     {
@@ -272,14 +279,5 @@ wwv.update = function ( )
 
 wwv.create = function ( )
 {
-    // this should be retrieved from the server
-    // when the game starts
-    wwv.map = wwv.create_map(4, 800, 800);
-    wwv.clouds = wwv.generate_clouds(800, 800);
-    wwv.atr = wwv.calc_all_tr(wwv.map, wwv.clouds);
-
-    wwv.mapImg = wwv.render_map(wwv.map);
-    wwv.cityImage = wwv.render_cities(wwv.map);
-    wwv.prtImage = wwv.render_particles();
-    wwv.cloudImg = wwv.render_clouds(wwv.clouds);
+    wwv.game.add.sprite(0, 0, 'title');
 };

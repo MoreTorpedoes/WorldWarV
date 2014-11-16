@@ -8,8 +8,11 @@
 	</div>
 </div>
 
-<button class="btn btn-primary" onclick="wwv.test_fire_nuke()">Test Fire Nuke</button>
+<button ng-disabled="state == 'waiting' || state == 'aiming'" class="btn btn-primary" ng-click="aim();">Aim</button>
+<button ng-disabled="state == 'picking' || state == 'waiting'" class="btn btn-primary" ng-click="fire();">Fire</button>
 <button class="btn btn-primary" ng-click="leaveRoom();">Leave Room</button>
+
+<button class="btn btn-primary" onclick="wwv.test_fire_nuke()">Test Fire Nuke</button>
 
 <hr>
 
