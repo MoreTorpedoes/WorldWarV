@@ -101,7 +101,7 @@ module.exports = -> # main
 
     # leave the room the user is currently in
     spark.on RECIEVE_LEAVE_ROOM, (data) ->
-      console.log "Leave room"
+      #console.log "Leave room"
 
       if user.room
         room = user.room
@@ -117,7 +117,6 @@ module.exports = -> # main
         # remove the users room
         delete user.room
         # inform the requesting user they have left the room
-        console.log 'ding'
         spark.emit(TRANSMIT_ROOM_LEFT)
       else 
         # the users was not a member of a room

@@ -91,21 +91,33 @@ angular.module('WorldWarV').controller('RoomCtrl', function ($log, $scope, $root
   primus.on(WWVEvents.RECIEVE_ROOM_CREATED, function (data) {
     $log.log('room created : ' + data.name);
     $rootScope.room = data;
-
     $location.path('/' + data.name);
     $scope.$apply();
   });
   primus.on(WWVEvents.RECIEVE_ROOM_CREATE_FAILED, function (error) {
-    $log.log('room error');
+    $log.log('room create error');
     $scope.error = error;
     $scope.$apply();
   });
 
   $scope.joinRoom = function () {
     $log.log('join room : ' + $scope.room.name);
+    primus.emit(WWVEvents.TRANSMIT_JOIN_ROOM, {
+      name: $scope.room.name
+    });
   };
   // listen for response on joining a room
-
+  primus.on(WWVEvents.RECIEVE_ROOM_JOINED, function (data) {
+    $log.log('room joined');
+    $rootScope.room = data;
+    $location.path('/' + data.name);
+    $scope.$apply();
+  });
+  primus.on(WWVEvents.RECIEVE_ROOM_JOIN_FAILED, function (error) {
+    console.log('room join error');
+    $scope.error = error;
+    $scope.$apply();
+  });
 });
 
 angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $rootScope, $location, primus) {
