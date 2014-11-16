@@ -20,6 +20,7 @@ TRANSMIT_ROOM_JOINED = 'Room Joined'
 TRANSMIT_ROOM_JOIN_FAILED = 'Room Join Failed'
 TRANSMIT_ALIAS_SET = 'Alias Set'
 TRANSMIT_ROOM_LEFT = 'Left Room'
+TRANSMIT_LEAVE_ROOM_ERROR = 'Leave Room Error'
 
 users = {}
 rooms = {}
@@ -101,9 +102,9 @@ module.exports = -> # main
     # leave the room the user is currently in
     spark.on RECIEVE_LEAVE_ROOM, (data) ->
       console.log "Leave room"
-      room = user.room
 
-      if room
+      if user.room
+        room = user.room
         # remove the user from the list of users in the room
         index = room.users.indexOf(summerizeUser(user))
         room.users.splice(index, 1) if index > -1
@@ -120,6 +121,9 @@ module.exports = -> # main
         spark.emit(TRANSMIT_ROOM_LEFT)
       else 
         # the users was not a member of a room
+        spark.emit(TRANSMIT_LEAVE_ROOM_ERROR, {
+          message: 'User does not currently belong to a room'
+        })
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->
