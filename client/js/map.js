@@ -2,11 +2,13 @@
 
 var wwv = wwv || {};
 
+// Client & server: Returns distance between two points
 wwv.point_dist = function ( p1, p2 )
 {
     return Math.sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
 };
 
+// Client & server: Picks a random angle given a radius (acc) and offsets by (p)
 wwv.rp_radius_offset = function ( p, acc )
 {
     var r = acc;
@@ -14,6 +16,7 @@ wwv.rp_radius_offset = function ( p, acc )
     return { x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r };
 };
 
+// Server: Generates map & city locations & populations, with (players) 2-4, W and H no need to set in call
 wwv.create_map = function ( players, W, H )
 {
     if (!W) W = 800;
@@ -163,6 +166,7 @@ wwv.create_map = function ( players, W, H )
     return map;
 };
 
+// Server: Calculate target accuracy radius between (p1) and (p2) given (map) and (CL)ouds
 wwv.calc_target_radius = function ( p1, p2, map, CL )
 {
     var dist = 4.0;
@@ -199,6 +203,7 @@ wwv.calc_target_radius = function ( p1, p2, map, CL )
     return Math.sqrt(dist) * DF / 2;
 };
 
+// Server: Calculate a matrix of accuracy radii between all pairs of enemy cities given (map) and (CL)ouds
 wwv.calc_all_tr = function ( map, CL )
 {
     var atr = {};
@@ -224,6 +229,7 @@ wwv.calc_all_tr = function ( map, CL )
     return atr;
 };
 
+// Client: Calculate point in trajectory for display and nuke animation
 wwv.trajectory_interp = function ( p1, p2, t )
 {
     var t2 = Math.pow(Math.sin(Math.PI / 2.0 - Math.abs(t - 0.5) * 1.0 * Math.PI), 1.0);
@@ -237,6 +243,7 @@ wwv.trajectory_interp = function ( p1, p2, t )
     return p;
 };
 
+// Client: Render trajectory
 wwv.render_trajectory = function ( T, bmd )
 {
     var ctx = bmd.ctx;
@@ -253,6 +260,7 @@ wwv.render_trajectory = function ( T, bmd )
     ctx.stroke();
 };
 
+// Client: Compute 100 points on trajectory
 wwv.generate_trajectory = function ( p1, p2 )
 {
     var interp = function ( t )
@@ -267,6 +275,7 @@ wwv.generate_trajectory = function ( p1, p2 )
     return L;
 };
 
+// Client: Render a map
 wwv.render_map = function ( map, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
@@ -298,6 +307,7 @@ wwv.render_map = function ( map, img )
     return img;
 };
 
+// Client: Render cities
 wwv.render_cities = function ( map, img, HL, T, NK )
 {
     if (!HL)
@@ -361,6 +371,7 @@ wwv.render_cities = function ( map, img, HL, T, NK )
     return img;
 };
 
+// Server: Generate clouds (W) & (H) no need to set
 wwv.generate_clouds = function ( W, H )
 {
     if (!W) W = 800;
@@ -403,6 +414,7 @@ wwv.generate_clouds = function ( W, H )
     return L;
 };
 
+// Client: Render clouds
 wwv.render_clouds = function ( list, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
