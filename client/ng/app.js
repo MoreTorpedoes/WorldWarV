@@ -1,10 +1,28 @@
 'use strict';
 
+var WWVEvents = {
+  TRANSMIT_CREATE_ROOM: 'Create Room',
+  TRANSMIT_JOIN_ROOM: 'Join Room',
+  TRANSMIT_SET_ALIAS: 'Set Alias',
+  TRANSMIT_LEAVE_ROOM: 'Leave Room',
+
+  // events recievable
+  RECIEVE_ROOM_CREATED: 'Room Created',
+  RECIEVE_ROOM_CREATE_FAILED: 'Room Create Failed',
+  RECIEVE_ROOM_UPDATED: 'Room Updated',
+  RECIEVE_ROOM_JOINED: 'Room Joined',
+  RECIEVE_ROOM_JOIN_FAILED: 'Room Join Failed',
+  RECIEVE_ALIAS_SET: 'Alias Set'
+};
+var primus = new Primus("http://localhost:8080");
+
 angular
   .module('WorldWarV', [
     'ui.bootstrap',
     'ui.router'
   ])
+
+  .constant('primus', primus)
 
   .config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/');
@@ -12,12 +30,12 @@ angular
     $stateProvider
       .state('join', {
         url: '/',
-        //controller: 'LoginCtrl',
+        controller: 'RoomCtrl',
         templateUrl: 'ng/views/join.html'
       })
-      .state('in-game', {
+      .state('game', {
         url: '/:room',
-        //controller: 'RegistrationCtrl',
+        controller: 'GameCtrl',
         templateUrl: 'ng/views/gameMenu.html'
       });
   })
@@ -34,7 +52,7 @@ angular.module('WorldWarV').directive('wwvMenu', function ($log, $window, $timeo
     link: function postLink(scope, element, attrs) {
 
       function setElementSize (element) {
-        console.log('setElementSize');
+        $log.log('setElementSize');
         element.width($(window).width() - $('canvas').width() - 40);
         element.height($(window).height());
       }
@@ -55,4 +73,42 @@ angular.module('WorldWarV').directive('wwvMenu', function ($log, $window, $timeo
       });
     }
   };
+});
+
+angular.module('WorldWarV').controller('RoomCtrl', function ($log, $scope, $location, primus) {
+  $scope.room = {};
+  $scope.error = null;
+
+  $scope.createRoom = function () {
+    $log.log('create room : ' + $scope.room.name);
+    primus.emit(WWVEvents.TRANSMIT_CREATE_ROOM, {
+      name: $scope.room.name
+    });
+  };
+  // listen for the responce on creating a room
+  primus.on(WWVEvents.RECIEVE_ROOM_CREATED, function (data) {
+    $log.log('room created : ' + data.name);
+    $location.path('/' + data.name);
+    $scope.$apply();
+  });
+  primus.on(WWVEvents.RECIEVE_ROOM_CREATE_FAILED, function (error) {
+    $log.log('room error');
+    $scope.error = error;
+    $scope.$apply();
+  });
+
+  $scope.joinRoom = function () {
+    $log.log('join room : ' + $scope.room.name);
+  };
+  // listen for response on joining a room
+
+});
+
+angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $location, primus) {
+  
+  $scope.leaveRoom = function () {
+    $log.log('leave room');
+  };
+  // listen for a response leaving the room
+
 });
