@@ -11,7 +11,8 @@ $ npm install && bower install
 
 ## Developing
 
-Run `grunt serve` to serve the client side content.
+Run `node index.js` to start the server.  
+Run `grunt serve:client` to serve the client side content.
 
 ## Authors
 
