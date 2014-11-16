@@ -19,6 +19,7 @@ TRANSMIT_ROOM_UPDATED = 'Room Updated'
 TRANSMIT_ROOM_JOINED = 'Room Joined'
 TRANSMIT_ROOM_JOIN_FAILED = 'Room Join Failed'
 TRANSMIT_ALIAS_SET = 'Alias Set'
+TRANSMIT_ROOM_LEFT = 'Left Room'
 
 users = {}
 rooms = {}
@@ -96,6 +97,29 @@ module.exports = -> # main
         spark.emit(TRANSMIT_ROOM_JOIN_FAILED, {
           message: "#{data.name} is not a valid room."
         })
+
+    # leave the room the user is currently in
+    spark.on RECIEVE_LEAVE_ROOM, (data) ->
+      console.log "Leave room"
+      room = user.room
+
+      if room
+        # remove the user from the list of users in the room
+        index = room.users.indexOf(summerizeUser(user))
+        room.users.splice(index, 1) if index > -1
+        # push the updated state of the room to remaining users
+        if room.users.length > 0
+          room.users.forEach (roomUser) -> # push current state of room
+            users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
+        else # the room is empty
+          delete rooms[room.name]
+        # remove the users room
+        delete user.room
+        # inform the requesting user they have left the room
+        console.log 'ding'
+        spark.emit(TRANSMIT_ROOM_LEFT)
+      else 
+        # the users was not a member of a room
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->

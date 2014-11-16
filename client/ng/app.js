@@ -12,7 +12,8 @@ var WWVEvents = {
   RECIEVE_ROOM_UPDATED: 'Room Updated',
   RECIEVE_ROOM_JOINED: 'Room Joined',
   RECIEVE_ROOM_JOIN_FAILED: 'Room Join Failed',
-  RECIEVE_ALIAS_SET: 'Alias Set'
+  RECIEVE_ALIAS_SET: 'Alias Set',
+  RECIEVE_ROOM_LEFT: 'Left Room'
 };
 var primus = new Primus("http://localhost:8080");
 
@@ -108,7 +109,12 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $loca
   
   $scope.leaveRoom = function () {
     $log.log('leave room');
+    primus.emit(WWVEvents.TRANSMIT_LEAVE_ROOM);
   };
   // listen for a response leaving the room
-
+  primus.on(WWVEvents.RECIEVE_ROOM_LEFT, function (data) {
+    $log.log('room left');
+    $location.path('/');
+    $scope.$apply();
+  });
 });
