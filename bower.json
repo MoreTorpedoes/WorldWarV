@@ -2,6 +2,7 @@
   "name": "WorldWarV",
   "version": "0.0.0",
   "authors": [
+    "Chris Adams <chris.ah.adams@gmail.com",
     "Dawson Reid <dreid93@gmail.com>"
   ],
   "license": "MIT",
@@ -13,7 +14,7 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "~2.1.1",
+    "jquery": "~1.9.1",
     "phaser": "~2.1.3"
   }
 }

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>World War V</title>
+        <script src="../bower_components/jquery/jquery.min.js" type="text/javascript"></script>
+        <script src="../bower_components/phaser/build/phaser.min.js" type="text/javascript"></script>
+        <script src="js/main.js" type="text/javascript"></script>
+        <script src="js/map.js" type="text/javascript"></script>
+        <script src="js/particle.js" type="text/javascript"></script>
+        <script type='text/javascript'>
+            $(document).ready(function(){
+                wwv.init();
+            });
+        </script>
+        <style type='text/css'>
+            body, html {
+                background-color: #006;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='game_container' style='float: left'></div>
+        <div id='menu' style='width: 400px; float: left; background-color: #EEE; height: 770px; padding: 15px; color: #CCC; background-color: #116'>
+            <h2>World War V</h2>
+            <h5>The HTML5 Volta style total nuclear war simulator 2015.</h5>
+            <button onclick="wwv.test_fire_nuke()">Test fire nuke</button>
+        </div>
+    </body>
+</html>
