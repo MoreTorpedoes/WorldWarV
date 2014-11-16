@@ -62,11 +62,11 @@ wwv.create_map = function ( players, W, H )
     }
     map.C = C;
     
-    var NL = 80;
-    var NS = 1.0;
+    var NL = 200;
+    var NS = 1;
     for (var i=0; i<NC; i++)
     {
-        var L = [ {x: C[i].x, y: C[i].y, scale: 1 } ];
+        var L = [ {x: C[i].x, y: C[i].y, scale: NS } ];
         C[i].L = L;
     }
 
@@ -91,7 +91,7 @@ wwv.create_map = function ( players, W, H )
                     if (P < (20*NS+20*C[c].L[i].scale))
                         any = true;
                 }
-                if (minMe > (5+40*NS))
+                if (minMe > (5+80*NS))
                     any = true;
                 for (var c2=0; c2<C.length && !any; c2++)
                 {
@@ -118,7 +118,8 @@ wwv.create_map = function ( players, W, H )
         }
     }
 
-    var cities = Math.floor(NL/15);
+    var cities = [ 5, 4, 3 ];
+    cities = cities[players - 2];
     var pop = [];
 
     for (var i=0; i<players; i++)
@@ -139,11 +140,11 @@ wwv.create_map = function ( players, W, H )
                 {
                     chosen = idx;
                     for (var i=0; i<L.length; i++)
-                        if (wwv.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 60))
+                        if (wwv.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 100))
                             chosen = null;
                 }
                 k --;
-                if (k <= -10000)
+                if (k <= 1)
                     return wwv.create_map(players, W, H);
             }
             L.push({
@@ -200,7 +201,7 @@ wwv.calc_target_radius = function ( p1, p2, map, CL )
         }
     }
 
-    return Math.sqrt(dist) * DF / 2;
+    return Math.sqrt(dist) * DF;
 };
 
 // Server: Calculate a matrix of accuracy radii between all pairs of enemy cities given (map) and (CL)ouds
@@ -216,7 +217,7 @@ wwv.calc_all_tr = function ( map, CL )
                         var p1 = map.C[c1].CIT[i1];
                         var p2 = map.C[c2].CIT[i2];
                         var dist = wwv.calc_target_radius(p1, p2, map, CL);
-                        if (dist > 50) dist = 110;
+                        if (dist > 175) dist = 175;
                         if (!atr[c1]) atr[c1] = {};
                         if (!atr[c1][i1]) atr[c1][i1] = {};
                         if (!atr[c1][i1][c2]) atr[c1][i1][c2] = {};
@@ -318,21 +319,29 @@ wwv.render_cities = function ( map, img, HL, T, NK )
     img.clear();
     var sprb = game.make.sprite(0, 0, 'building');
     sprb.anchor.set(0.5);
+    var sprd = game.make.sprite(0, 0, 'building-destroyed');
+    sprd.anchor.set(0.5);
     
     for (var i=0; i<map.C.length; i++)
     {
         for (var j=0; j<map.C[i].CIT.length; j++)
         {
-            if (map.C[i].CIT[j].dead)
-                continue;
             var sc = Math.sqrt(map.C[i].CIT[j].pop / 100000) * 0.5;
             var dmg = 1.0 - (map.C[i].CIT[j].cpop / map.C[i].CIT[j].pop);
-            sprb.scale.set(sc);
-            sprb.tint = wwv.game_state.myTeam === i ? 0xa0ffa0 : 0xffa0a0;
-            for (var k=0; k<HL.length; k++)
-                if (HL[k][0] === i && HL[k][1] === j)
-                    sprb.tint = HL[k][2];
-            img.draw(sprb, map.C[i].CIT[j].x, map.C[i].CIT[j].y);
+            if (map.C[i].CIT[j].dead)
+            {
+                sprd.scale.set(sc);
+                img.draw(sprd, map.C[i].CIT[j].x, map.C[i].CIT[j].y);
+            }
+            else
+            {
+                sprb.scale.set(sc);
+                sprb.tint = wwv.game_state.myTeam === i ? 0x70ff70 : 0xffffff;
+                for (var k=0; k<HL.length; k++)
+                    if (HL[k][0] === i && HL[k][1] === j)
+                        sprb.tint = HL[k][2];
+                img.draw(sprb, map.C[i].CIT[j].x, map.C[i].CIT[j].y);
+            }
         }
         for (var j=0; j<map.C[i].CIT.length; j++)
         {
@@ -341,7 +350,7 @@ wwv.render_cities = function ( map, img, HL, T, NK )
             for (var k=0; k<HL.length; k++)
                 if (HL[k][0] === i && HL[k][1] === j && HL[k][3] >= 0)
                 {
-                    img.circle(map.C[i].CIT[j].x, map.C[i].CIT[j].y, HL[k][3], 'rgba(255,0,0,.5)');
+                    img.circle(map.C[i].CIT[j].x, map.C[i].CIT[j].y, HL[k][3], 'rgba(255,0,0,.25)');
                 }
         }
     }
