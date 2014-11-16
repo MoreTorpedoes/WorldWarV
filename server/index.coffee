@@ -6,22 +6,27 @@ _       = require 'lodash'
 
 SERVER_PORT = 8080
 
-# events recievable
-RECIEVE_CREATE_ROOM = 'Create Room'
-RECIEVE_JOIN_ROOM = 'Join Room'
-#RECIEVE_LIST_ROOM = 'List Room'
-RECIEVE_SET_ALIAS = 'Set Alias'
-RECIEVE_LEAVE_ROOM = 'Leave Room'
+WWVEvents = {
+  CREATE_ROOM: 'create room',
+  ROOM_CREATED: 'room created',
+  ROOM_CREATE_FAILED: 'room create failed',
 
-# events transmittable
-TRANSMIT_ROOM_CREATED = 'Room Created'
-TRANSMIT_ROOM_CREATE_FAILED = 'Room Create Failed'
-TRANSMIT_ROOM_UPDATED = 'Room Updated'
-TRANSMIT_ROOM_JOINED = 'Room Joined'
-TRANSMIT_ROOM_JOIN_FAILED = 'Room Join Failed'
-TRANSMIT_ALIAS_SET = 'Alias Set'
-TRANSMIT_ROOM_LEFT = 'Left Room'
-TRANSMIT_LEAVE_ROOM_ERROR = 'Leave Room Error'
+  JOIN_ROOM: 'join room',
+  ROOM_JOINED: 'room joined',
+  ROOM_JOIN_FAILED: 'room join failed',
+  
+  SET_ALIAS: 'set alias',
+  ALIAS_SET: 'alias set',
+  
+  LEAVE_ROOM: 'leave room',
+  ROOM_LEFT: 'left room',
+  LEAVE_ROOM_ERROR: 'leave room error',
+
+  GET_USER: 'get user',
+  USER: 'send user',
+
+  ROOM_UPDATED: 'room updated'
+}
 
 users = {}
 rooms = {}
@@ -58,13 +63,13 @@ module.exports = -> # main
     # define our routing
 
     # sets the alias field of the users
-    spark.on RECIEVE_SET_ALIAS, (data) ->
+    spark.on WWVEvents.SET_ALIAS, (data) ->
       user.alias = data.alias # set the users alias
-      spark.emit(TRANSMIT_ALIAS_SET, user)
+      spark.emit(WWVEvents.ALIAS_SET, user)
 
     # creates a room and ads the user that created
     # the room to the room. 
-    spark.on RECIEVE_CREATE_ROOM, (data) ->
+    spark.on WWVEvents.CREATE_ROOM, (data) ->
       # ensure the room name isn't already taken
       if data.name not of rooms
         user.room = room = rooms[data.name] = { # create the room
@@ -72,15 +77,15 @@ module.exports = -> # main
           users: [summerizeUser user]
         }
         # emit an event stating the room has been created
-        spark.emit(TRANSMIT_ROOM_CREATED, room)
+        spark.emit(WWVEvents.ROOM_CREATED, room)
       else 
-        spark.emit(TRANSMIT_ROOM_CREATE_FAILED, {
+        spark.emit(WWVEvents.ROOM_CREATE_FAILED, {
           message: "#{data.name} is already taken."
         })
 
     # ads a user to a room and notifies all users in
     # the room the new user has joined the room
-    spark.on RECIEVE_JOIN_ROOM, (data) ->
+    spark.on WWVEvents.JOIN_ROOM, (data) ->
       # if the room exists
       #console.log data.name of rooms
       #console.log ((summerizeUser(user) not in rooms[data.name].users))
@@ -92,16 +97,16 @@ module.exports = -> # main
         room.users.forEach (roomUser) -> # push current state of room
           if roomUser.id != spark.id
             #console.log users[roomUser.id] 
-            users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
+            users[roomUser.id].spark.emit(WWVEvents.ROOM_UPDATED, room)
         # inform the requesting user they have joined the room
-        spark.emit(TRANSMIT_ROOM_JOINED, room)
+        spark.emit(WWVEvents.ROOM_JOINED, room)
       else
-        spark.emit(TRANSMIT_ROOM_JOIN_FAILED, {
+        spark.emit(WWVEvents.ROOM_JOIN_FAILED, {
           message: "#{data.name} is not a valid room."
         })
 
     # leave the room the user is currently in
-    spark.on RECIEVE_LEAVE_ROOM, (data) ->
+    spark.on WWVEvents.LEAVE_ROOM, (data) ->
       #console.log "Leave room"
 
       if user.room
@@ -114,18 +119,23 @@ module.exports = -> # main
         # push the updated state of the room to remaining users
         if room.users.length > 0
           room.users.forEach (roomUser) -> # push current state of room
-            users[roomUser.id].spark.emit(TRANSMIT_ROOM_UPDATED, room)
+            users[roomUser.id].spark.emit(WWVEvents.ROOM_UPDATED, room)
         else # the room is empty
           delete rooms[room.name]
         # remove the users room
         delete user.room
         # inform the requesting user they have left the room
-        spark.emit(TRANSMIT_ROOM_LEFT)
+        spark.emit(WWVEvents.ROOM_LEFT)
       else 
         # the users was not a member of a room
-        spark.emit(TRANSMIT_LEAVE_ROOM_ERROR, {
+        spark.emit(WWVEvents.LEAVE_ROOM_ERROR, {
           message: 'User does not currently belong to a room'
         })
+
+    # client requesting current user data
+    spark.on WWVEvents.GET_USER, -> 
+      console.log 'GET_USER'
+      spark.emit WWVEvents.USER, user
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->

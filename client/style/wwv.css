@@ -4,9 +4,8 @@ body, html {
 
 #menu {
   float: left; 
-  background-color: #EEE; 
+  background-color: #3f92d2; 
   height: 770px; 
   padding: 15px; 
-  color: #CCC; 
-  background-color: #116;
+  color: #8ef13c;
 }
