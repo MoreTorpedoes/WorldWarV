@@ -328,13 +328,14 @@ wwv.render_cities = function ( map, img, HL, T, NK )
         {
             var sc = Math.sqrt(map.C[i].CIT[j].pop / 100000) * 0.5;
             var dmg = 1.0 - (map.C[i].CIT[j].cpop / map.C[i].CIT[j].pop);
-            sprb.scale.set(sc);
             if (map.C[i].CIT[j].dead)
             {
+                sprd.scale.set(sc);
                 img.draw(sprd, map.C[i].CIT[j].x, map.C[i].CIT[j].y);
             }
             else
             {
+                sprb.scale.set(sc);
                 sprb.tint = wwv.game_state.myTeam === i ? 0x70ff70 : 0xffffff;
                 for (var k=0; k<HL.length; k++)
                     if (HL[k][0] === i && HL[k][1] === j)
