@@ -59,7 +59,7 @@ wwv.render_particles = function ( img )
 
     if (wwv.prtDark > 0)
         img.rect(0, 0, W, H, 'rgba(0,0,0,' + Math.min(wwv.prtDark, 1) + ')');
-    wwv.prtDark -= Math.min(dt, 2.0) * wwv.prtDark * 0.5;
+    wwv.prtDark -= Math.min(dt, 1.0) * wwv.prtDark;
 
     var spr = game.make.sprite(0, 0, 'cloud');
     spr.anchor.set(0.5);

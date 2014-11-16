@@ -122,7 +122,7 @@ wwv.create_map = function ( players, W, H )
     cities = cities[players - 2];
     var pop = [];
 
-    for (var i=0; i<players; i++)
+    for (var i=0; i<cities; i++)
         pop.push(Math.random() * (1000000-100000) + 100000);
 
     for (var c=0; c<players; c++)

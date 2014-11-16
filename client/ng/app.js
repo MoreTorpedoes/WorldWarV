@@ -128,7 +128,7 @@ angular.module('WorldWarV').controller('RoomCtrl', function ($log, $scope, $root
     
     // this should be retrieved from the server   
     // when the game starts
-    wwv.map = wwv.create_map(4, 800, 800);
+    wwv.map = wwv.create_map(2, 800, 800);
     wwv.clouds = wwv.generate_clouds(800, 800);
     wwv.atr = wwv.calc_all_tr(wwv.map, wwv.clouds);
 
@@ -234,12 +234,12 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
 
   $scope.aim = function () {
     $log.log('start aiming');
-    $scope.state = 'aiming';
 
     var GS = wwv.game_state;
     var M = wwv.map;
     if (GS.selMine && GS.selOther) {
         if (!wwv.fireInfo) {
+            $scope.state = 'aiming';
             wwv.fireInfo = {
                 t: 0.0,
                 maxT: Math.random() * 0.5 + 0.5,
@@ -288,11 +288,28 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
             GS.picking = false;
             wwv.game_state.waiting = true;
 
-            primus.emit(WWVEvents.USER_NUKE, nuke);
+            var exData = null;
+            if (GS.myTeam === 0)
+            {
+              wwv.new_clouds = wwv.generate_clouds(800, 800);
+              wwv.new_atr = wwv.calc_all_tr(wwv.map, wwv.clouds);
+              exData = {
+                clouds: wwv.new_clouds,
+                atr: wwv.new_atr
+              };
+            }
+
+            primus.emit(WWVEvents.USER_NUKE, {
+              nuke: nuke,
+              exData: exData
+            });
         }
     }
   };
-  primus.on(WWVEvents.BLOW_SHIT_UP, function (nukes) {
+  primus.on(WWVEvents.BLOW_SHIT_UP, function (data) {
+    var nukes = data.nukes;
+    wwv.new_clouds = data.exData.clouds;
+    wwv.new_atr = data.exData.atr;
     var GS = wwv.game_state;
     var M = wwv.map;
     GS.picking = false;
@@ -303,5 +320,6 @@ angular.module('WorldWarV').controller('GameCtrl', function ($log, $scope, $root
     GS.selOther = null;
     GS.selTraj = null;
     wwv.fireInfo = null;
+    wwv.__scope = $scope;
   });
 });

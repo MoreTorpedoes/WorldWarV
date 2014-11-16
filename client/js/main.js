@@ -34,6 +34,7 @@ wwv.game_state = {
     titleScreen: true,
     started: false,
     picking: true,
+    aiming: false,
     waiting: false,
     myTeam: 0,
     selMine: null,
@@ -215,8 +216,11 @@ wwv.update = function ( )
         {
             wwv.game_state.nukes = null;
             wwv.game_state.picking = true;
-            wwv.clouds = wwv.generate_clouds(800, 800);
+            wwv.clouds = wwv.new_clouds;
+            wwv.atr = wwv.new_atr;
             wwv.cloudImg = wwv.render_clouds(wwv.clouds, wwv.cloudImg);
+            wwv.__scope.state = 'picking';
+            wwv.__scope.$apply();
         }
     }
     else if (wwv.fireInfo)
