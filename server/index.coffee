@@ -2,6 +2,7 @@
 
 http    = require 'http'
 Primus  = require 'primus'
+_       = require 'lodash'
 
 SERVER_PORT = 8080
 
@@ -106,6 +107,8 @@ module.exports = -> # main
       if user.room
         room = user.room
         # remove the user from the list of users in the room
+        _.remove room.users, (roomUser) -> roomUser.id == spark.id
+
         index = room.users.indexOf(summerizeUser(user))
         room.users.splice(index, 1) if index > -1
         # push the updated state of the room to remaining users
