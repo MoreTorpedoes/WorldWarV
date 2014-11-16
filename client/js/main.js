@@ -22,10 +22,16 @@ wwv.preload = function ( )
     wwv.game.load.image('building', 'img/building.png');
     wwv.game.load.image('cloud', 'img/cloud.png');
     wwv.game.load.image('nuke', 'img/nuke.png');
+
+    // game screens
+    wwv.game.load.image('title', 'img/title.jpg');
+    wwv.game.load.image('win-screen', 'img/win-screen.jpg');
+    wwv.game.load.image('lose-screen', 'img/lose-screen.jpg');
 };
 
 wwv.game_state = {
-    started: true,
+    titleScreen: true,
+    started: false,
     picking: true,
     myTeam: 0,
     selMine: null,
@@ -213,6 +219,8 @@ wwv.update = function ( )
 
 wwv.create = function ( )
 {
+    // this should be retrieved from the server
+    // when the game starts
     wwv.map = wwv.create_map(4, 800, 800);
     wwv.clouds = wwv.generate_clouds(800, 800);
     wwv.atr = wwv.calc_all_tr(wwv.map, wwv.clouds);

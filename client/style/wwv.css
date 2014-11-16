@@ -1,0 +1,12 @@
+body, html {
+	background-color: #006;
+}
+
+#menu {
+  float: left; 
+  background-color: #EEE; 
+  height: 770px; 
+  padding: 15px; 
+  color: #CCC; 
+  background-color: #116;
+}
