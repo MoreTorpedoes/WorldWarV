@@ -25,8 +25,9 @@ angular
   ])
 
   .constant('primus', primus)
+  .constant('STATE_IN_GAME', 'game')
 
-  .config(function ($stateProvider, $urlRouterProvider) {
+  .config(function ($stateProvider, $urlRouterProvider, STATE_IN_GAME) {
     $urlRouterProvider.otherwise('/');
 
     $stateProvider
@@ -35,17 +36,29 @@ angular
         controller: 'RoomCtrl',
         templateUrl: 'ng/views/join.html'
       })
-      .state('game', {
+      .state(STATE_IN_GAME, {
         url: '/:room',
         controller: 'GameCtrl',
         templateUrl: 'ng/views/gameMenu.html'
       });
   })
 
-  .run(function ($log) {
+  .run(function ($log, $rootScope, STATE_IN_GAME, $location) {
     $log.log('World War V has began!');
+
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+      $log.log(toState);
+      if (toState.name == STATE_IN_GAME) {
+        if (!$rootScope.room) { // attempting to hit room state without a room
+          $location.path('/');
+        }
+      }
+    });
   });
 
+/*
+Dynamically resize the menu to fit the screen width.
+*/
 angular.module('WorldWarV').directive('wwvMenu', function ($log, $window, $timeout) {
 
   return {
@@ -78,8 +91,18 @@ angular.module('WorldWarV').directive('wwvMenu', function ($log, $window, $timeo
 });
 
 angular.module('WorldWarV').controller('RoomCtrl', function ($log, $scope, $rootScope, $location, primus) {
+  $scope.user = {};
   $scope.room = {};
   $scope.error = null;
+
+  $scope.setAlias = function () {
+    $log.log('set alias');
+    primus.emit(WWVEvents.TRANSMIT_SET_ALIAS, $scope.user);
+  };
+  primus.on(WWVEvents.RECIEVE_ALIAS_SET, function (user) {
+    $log.log('alias set : ' + user.alias);
+    $rootScope.user = user;
+  });
 
   $scope.createRoom = function () {
     $log.log('create room : ' + $scope.room.name);

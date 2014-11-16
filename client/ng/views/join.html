@@ -1,4 +1,16 @@
-<form>
+<div class="input-group">
+  <input 
+    ng-model="user.alias"
+    type="text" 
+    class="form-control ng-valid ng-dirty" 
+    ng-model="tmpAlias" 
+    placeholder="Immabadass">
+  <span class="input-group-btn">
+    <button ng-click="setAlias();" type="submit" class="btn btn-primary">Set Alias</button>
+  </span>
+</div>
+
+<form style="margin-top: 10px;">
 	<input ng-model="room.name" type="text" class="form-control" placeholder="Apocalyptic Hell">
 	<div class="form-group">
 		<div style="margin-top: 10px;">
