@@ -221,6 +221,36 @@ wwv.update = function ( )
             wwv.cloudImg = wwv.render_clouds(wwv.clouds, wwv.cloudImg);
             wwv.__scope.state = 'picking';
             wwv.__scope.$apply();
+
+            var mine = 0;
+            var others = 0;
+
+            for (var i=0; i<wwv.map.C.length; i++)
+                for (var j=0; j<wwv.map.C[i].CIT.length; j++)
+                {
+                    if (!wwv.map.C[i].CIT[j].dead)
+                    {
+                        if (i === wwv.game_state.myTeam)
+                            mine += 1;
+                        else
+                            others += 1;
+                    }
+                }
+
+            if (mine === 0)
+            {
+                wwv.game.add.sprite(0, 0, 'lose-screen');
+                wwv.game_state.inLobby = false;
+                wwv.__scope.state = 'waiting';
+                wwv.__scope.$apply();
+            }
+            else if (others === 0)
+            {
+                wwv.game.add.sprite(0, 0, 'win-screen');
+                wwv.game_state.inLobby = false;
+                wwv.__scope.state = 'waiting';
+                wwv.__scope.$apply();
+            }
         }
     }
     else if (wwv.fireInfo)
