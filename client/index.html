@@ -31,7 +31,14 @@
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
 
-    <!-- Game Code -->
+    <!-- Game Code
+    Note : engine.js should be the only required javascript file. All other JS
+    libs should be imported (with the require statement) into engine.js using
+    browserify. This will make it much simpley to package our application for
+    deployment.
+    -->
+    <script src="js/engine.js" type="text/javascript"></script>
+
     <script src="js/main.js" type="text/javascript"></script>
     <script src="js/map.js" type="text/javascript"></script>
     <script src="js/particle.js" type="text/javascript"></script>
