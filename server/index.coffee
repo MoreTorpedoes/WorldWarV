@@ -25,7 +25,9 @@ WWVEvents = {
   GET_USER: 'get user',
   USER: 'send user',
 
-  ROOM_UPDATED: 'room updated'
+  ROOM_UPDATED: 'room updated',
+  USER_NUKE: 'user nuke',
+  BLOW_SHIT_UP: 'blow shit up'
 }
 
 users = {}
@@ -109,7 +111,10 @@ module.exports = -> # main
               room: room
             })
         # inform the requesting user they have joined the room
-        spark.emit(WWVEvents.ROOM_JOINED, room)
+        spark.emit(WWVEvents.ROOM_JOINED, {
+          teamNumber: user.teamNumber
+          room: room
+        })
       else
         spark.emit(WWVEvents.ROOM_JOIN_FAILED, {
           message: "#{data.name} is not a valid room."
@@ -146,6 +151,21 @@ module.exports = -> # main
     spark.on WWVEvents.GET_USER, ->
       console.log 'GET_USER'
       spark.emit WWVEvents.USER, user
+
+    spark.on WWVEvents.USER_NUKE, (data) ->
+      user.room.nukes = user.room.nukes || []
+      user.room.nukes.push(data.nuke)
+
+      if data.exData
+        user.room.exData = data.exData
+
+      if user.room.nukes.length == user.room.users.length
+        user.room.users.forEach (roomUser) ->
+          users[roomUser.id].spark.emit(WWVEvents.BLOW_SHIT_UP, {
+            nukes: user.room.nukes,
+            exData: user.room.exData
+          })
+        delete user.room.nukes
 
   # handle disconnect
   primus.on 'disconnection', (spark) ->

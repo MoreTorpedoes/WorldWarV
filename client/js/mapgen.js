@@ -61,7 +61,7 @@ mapgen.create_map = function ( players, W, H )
             return mapgen.create_map(players, W, H);
         C.push(p);
     }
-    mapgen.C = C;
+    map.C = C;
 
     var NL = 200;
     var NS = 1;
@@ -123,7 +123,7 @@ mapgen.create_map = function ( players, W, H )
     cities = cities[players - 2];
     var pop = [];
 
-    for (var i=0; i<players; i++)
+    for (var i=0; i<cities; i++)
         pop.push(Math.random() * (1000000-100000) + 100000);
 
     for (var c=0; c<players; c++)
@@ -217,7 +217,7 @@ mapgen.calc_all_tr = function ( map, CL )
                     {
                         var p1 = map.C[c1].CIT[i1];
                         var p2 = map.C[c2].CIT[i2];
-                        var dist = map.calc_target_radius(p1, p2, map, CL);
+                        var dist = mapgen.calc_target_radius(p1, p2, map, CL);
                         if (dist > 175) dist = 175;
                         if (!atr[c1]) atr[c1] = {};
                         if (!atr[c1][i1]) atr[c1][i1] = {};

@@ -49,7 +49,7 @@ particle.nuke_explosion = function ( p )
 particle.prtLastTime = null;
 particle.render_particles = function ( img )
 {
-    var game = particle.game, W = particle.W, H = particle.H;
+    var game = wwv.game, W = wwv.W, H = wwv.H;
     var time = game.time.now / 1000;
     var dt = 0;
     if (particle.prtLastTime)

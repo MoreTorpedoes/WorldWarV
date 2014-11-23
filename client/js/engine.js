@@ -11,7 +11,7 @@ global.wwv = wwv;
 
 // import modules
 wwv.particle  = require('./particle.js');
-wwv.mapgen       = require('./mapgen.js');
+wwv.mapgen    = require('./mapgen.js');
 
 wwv.W = 800;
 wwv.H = 800;
@@ -45,6 +45,7 @@ wwv.game_state = {
     titleScreen: true,
     started: false,
     picking: true,
+    aiming: false,
     waiting: false,
     myTeam: 0,
     selMine: null,
@@ -75,7 +76,7 @@ wwv.test_fire_nuke = function ( )
             var p1 = M.C[GS.selMine[0]].CIT[GS.selMine[1]];
             var dmg = Math.random() * wwv.atr[GS.selMine[0]][GS.selMine[1]][GS.selOther[0]][GS.selOther[1]] * (1.0 - wwv.fireInfo.t);
             var p2 =
-                wwv.rp_radius_offset(
+                wwv.mapgen.rp_radius_offset(
                     M.C[GS.selOther[0]].CIT[GS.selOther[1]],
                     dmg
                 );
@@ -132,7 +133,7 @@ wwv.update = function ( )
                 {
                     if (CIT[i].dead)
                         continue;
-                    var dist = wwv.point_dist(p, CIT[i]);
+                    var dist = wwv.mapgen.point_dist(p, CIT[i]);
                     if (dist < 25)
                     {
                         if (bdist === null || dist < bdist)
@@ -160,7 +161,7 @@ wwv.update = function ( )
                     ]);
                 if (HL.length === 2)
                 {
-                    wwv.game_state.selTraj = wwv.generate_trajectory(
+                    wwv.game_state.selTraj = wwv.mapgen.generate_trajectory(
                         wwv.map.C[wwv.game_state.selMine[0]].CIT[wwv.game_state.selMine[1]],
                         wwv.map.C[wwv.game_state.selOther[0]].CIT[wwv.game_state.selOther[1]]
                     );
@@ -178,7 +179,7 @@ wwv.update = function ( )
 
         for (var i=0; i<NK.length; i++)
         {
-            var t = dt / (wwv.point_dist(NK[i].p1, NK[i].p2) / 100);
+            var t = dt / (wwv.mapgen.point_dist(NK[i].p1, NK[i].p2) / 100);
             if (t >= 1.0)
             {
                 // explode
@@ -203,7 +204,7 @@ wwv.update = function ( )
                 continue;
             }
             var lp = { x: NK[i].x, y: NK[i].y };
-            var np = wwv.trajectory_interp(NK[i].p1, NK[i].p2, t);
+            var np = wwv.mapgen.trajectory_interp(NK[i].p1, NK[i].p2, t);
             NK[i].x = np.x;
             NK[i].y = np.y;
             NK[i].z = np.z / 60.0;
@@ -226,8 +227,43 @@ wwv.update = function ( )
         {
             wwv.game_state.nukes = null;
             wwv.game_state.picking = true;
-            wwv.clouds = wwv.generate_clouds(800, 800);
+
+            wwv.clouds = wwv.new_clouds;
+            wwv.atr = wwv.new_atr;
             wwv.cloudImg = wwv.mapgen.render_clouds(wwv.clouds, wwv.cloudImg);
+            // this should be fixed in the future. not a good idea
+            wwv.__scope.state = 'picking';
+            wwv.__scope.$apply();
+
+            var mine = 0;
+            var others = 0;
+
+            for (var i=0; i<wwv.map.C.length; i++)
+                for (var j=0; j<wwv.map.C[i].CIT.length; j++)
+                {
+                    if (!wwv.map.C[i].CIT[j].dead)
+                    {
+                        if (i === wwv.game_state.myTeam)
+                            mine += 1;
+                        else
+                            others += 1;
+                    }
+                }
+
+            if (mine === 0)
+            {
+                wwv.game.add.sprite(0, 0, 'lose-screen');
+                wwv.game_state.inLobby = false;
+                wwv.__scope.state = 'waiting';
+                wwv.__scope.$apply();
+            }
+            else if (others === 0)
+            {
+                wwv.game.add.sprite(0, 0, 'win-screen');
+                wwv.game_state.inLobby = false;
+                wwv.__scope.state = 'waiting';
+                wwv.__scope.$apply();
+            }
         }
     }
     else if (wwv.fireInfo)
@@ -257,7 +293,7 @@ wwv.update = function ( )
             ]);
         if (HL.length === 2)
         {
-            wwv.game_state.selTraj = wwv.generate_trajectory(
+            wwv.game_state.selTraj = wwv.mapgen.generate_trajectory(
                 wwv.map.C[wwv.game_state.selMine[0]].CIT[wwv.game_state.selMine[1]],
                 wwv.map.C[wwv.game_state.selOther[0]].CIT[wwv.game_state.selOther[1]]
             );
