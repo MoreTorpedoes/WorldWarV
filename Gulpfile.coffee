@@ -1,10 +1,16 @@
 
-gulp  = require 'gulp'
-lrs   = require('tiny-lr')()
-browserify = require 'gulp-browserify'
+gulp        = require 'gulp'
+lrs         = require('tiny-lr')()
+browserify  = require 'gulp-browserify'
+shell       = require 'gulp-shell'
 
 CLIENT_DIR = "#{__dirname}/client"
 TMP_DIR = "#{__dirname}/.tmp"
+SERVER_PORT = 9000
+LIVERELOAD_PORT = 35729
+LOCALHOST = "http://localhost:#{SERVER_PORT}"
+# OPEN_CMD currently only works on Mac
+OPEN_CMD = "open -a \"Google Chrome\" #{LOCALHOST}"
 
 notifyLivereload = (event) ->
   #console.log event
@@ -46,11 +52,17 @@ gulp.task 'serve', ->
   app.use express.static(CLIENT_DIR)
   app.use express.static("#{__dirname}/bower_components/**")
   # run app and livereload servers
-  app.listen 9000
-  lrs.listen 35729
+  app.listen SERVER_PORT
+  lrs.listen LIVERELOAD_PORT
+
+# open the chrome browser
+gulp.task 'open', ->
+  gulp.src "#{CLIENT_DIR}/index.html", {read: false}
+    .pipe shell [OPEN_CMD]
 
 gulp.task 'default', [
   'build',
   'serve',
+  'open',
   'watch'
 ]
