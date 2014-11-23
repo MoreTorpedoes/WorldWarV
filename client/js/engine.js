@@ -1,8 +1,18 @@
 // WWV - Client Side - Main
 
 var wwv = wwv || {};
-wwv.particle = require('./particle.js');
- 
+
+/*
+This globally exposes the wwv module so that it may be used within the particle
+and map module. Preferrably this should not be done because it promotes
+coupling of the modules.
+*/
+global.wwv = wwv;
+
+// import modules
+wwv.particle  = require('./particle.js');
+wwv.map       = require('./map.js');
+
 wwv.W = 800;
 wwv.H = 800;
 

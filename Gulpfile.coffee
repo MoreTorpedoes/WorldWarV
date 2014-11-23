@@ -34,7 +34,7 @@ gulp.task 'watch', ->
   # temp directory watches
   gulp.watch "#{TMP_DIR}/js/engine.js", notifyLivereload
   # build files
-  gulp.watch "#{CLIENT_DIR}/js/**/*.js", ['jsScript'], notifyLivereload
+  gulp.watch "#{CLIENT_DIR}/js/**/*.js", ['jsScripts'], notifyLivereload
 
 # serve the appropriate files and dirs
 gulp.task 'serve', ->

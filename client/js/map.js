@@ -1,15 +1,16 @@
 // WWV - Client Side - Map gen and render
 
-var wwv = wwv || {};
+var map = map || {};
+module.exports = map;
 
 // Client & server: Returns distance between two points
-wwv.point_dist = function ( p1, p2 )
+map.point_dist = function ( p1, p2 )
 {
     return Math.sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
 };
 
 // Client & server: Picks a random angle given a radius (acc) and offsets by (p)
-wwv.rp_radius_offset = function ( p, acc )
+map.rp_radius_offset = function ( p, acc )
 {
     var r = acc;
     var a = Math.random() * Math.PI * 2.0;
@@ -17,7 +18,7 @@ wwv.rp_radius_offset = function ( p, acc )
 };
 
 // Server: Generates map & city locations & populations, with (players) 2-4, W and H no need to set in call
-wwv.create_map = function ( players, W, H )
+map.create_map = function ( players, W, H )
 {
     if (!W) W = 800;
     if (!H) H = 800;
@@ -31,7 +32,7 @@ wwv.create_map = function ( players, W, H )
     var C = [];
     var CDIST = Math.min(W, H) / (2 * players*0.75);
     var CSIZE = CDIST / 2;
-    
+
     var rand_point = function ( ) {
         var ret = {};
         ret.x = Math.random() * (W - CSIZE * 2) + CSIZE;
@@ -49,7 +50,7 @@ wwv.create_map = function ( players, W, H )
             var any = false;
             for (var j=0; j<C.length && !any; j++)
             {
-                var P = wwv.point_dist(p, C[j]) / CDIST;
+                var P = map.point_dist(p, C[j]) / CDIST;
                 if (P < 2.0 || P > 12.0)
                     any = true;
             }
@@ -57,11 +58,11 @@ wwv.create_map = function ( players, W, H )
                 break;
         }
         if (k <= 0)
-            return wwv.create_map(players, W, H);
+            return map.create_map(players, W, H);
         C.push(p);
     }
     map.C = C;
-    
+
     var NL = 200;
     var NS = 1;
     for (var i=0; i<NC; i++)
@@ -86,7 +87,7 @@ wwv.create_map = function ( players, W, H )
                 var minMe = W*W;
                 for (var i=0; i<C[c].L.length; i++)
                 {
-                    var P = wwv.point_dist(C[c].L[i], p);
+                    var P = map.point_dist(C[c].L[i], p);
                     minMe = Math.min(minMe, P);
                     if (P < (20*NS+20*C[c].L[i].scale))
                         any = true;
@@ -99,7 +100,7 @@ wwv.create_map = function ( players, W, H )
                     {
                         for (var i=0; i<C[c2].L.length && !any; i++)
                         {
-                            if (wwv.point_dist(C[c2].L[i], p) < CDIST)
+                            if (map.point_dist(C[c2].L[i], p) < CDIST)
                                 any = true;
                         }
                     }
@@ -140,12 +141,12 @@ wwv.create_map = function ( players, W, H )
                 {
                     chosen = idx;
                     for (var i=0; i<L.length; i++)
-                        if (wwv.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 100))
+                        if (map.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 100))
                             chosen = null;
                 }
                 k --;
                 if (k <= 1)
-                    return wwv.create_map(players, W, H);
+                    return map.create_map(players, W, H);
             }
             L.push({
                 x: C[c].L[chosen].x,
@@ -163,18 +164,18 @@ wwv.create_map = function ( players, W, H )
     }
 
     console.log(map);
-    
+
     return map;
 };
 
 // Server: Calculate target accuracy radius between (p1) and (p2) given (map) and (CL)ouds
-wwv.calc_target_radius = function ( p1, p2, map, CL )
+map.calc_target_radius = function ( p1, p2, map, CL )
 {
     var dist = 4.0;
 
-    var DF = wwv.point_dist(p1, p2) / 50.0; // distance factor
+    var DF = map.point_dist(p1, p2) / 50.0; // distance factor
 
-    var len = wwv.point_dist(p1, p2);
+    var len = map.point_dist(p1, p2);
     var dx = (p2.x - p1.x) / len;
     var dy = (p2.y - p1.y) / len;
 
@@ -184,7 +185,7 @@ wwv.calc_target_radius = function ( p1, p2, map, CL )
         for (var c=0; c<map.C.length; c++)
             for (var i=0; i<map.C[c].L.length; i++)
             {
-                var d = wwv.point_dist(map.C[c].L[i], p) - map.C[c].L[i].scale * 60;
+                var d = map.point_dist(map.C[c].L[i], p) - map.C[c].L[i].scale * 60;
                 if (d < 0)
                 {
                     var green = Math.pow(1.0 - map.C[c].L[i].scale, 0.5);
@@ -193,7 +194,7 @@ wwv.calc_target_radius = function ( p1, p2, map, CL )
             }
         for (var i=0; i<CL.length; i++)
         {
-            var d = wwv.point_dist(CL[i], p) - CL[i].radius;
+            var d = map.point_dist(CL[i], p) - CL[i].radius;
             if (d < 0)
             {
                 dist += CL[i].radius / 128.0;
@@ -205,7 +206,7 @@ wwv.calc_target_radius = function ( p1, p2, map, CL )
 };
 
 // Server: Calculate a matrix of accuracy radii between all pairs of enemy cities given (map) and (CL)ouds
-wwv.calc_all_tr = function ( map, CL )
+map.calc_all_tr = function ( map, CL )
 {
     var atr = {};
     for (var c1=0; c1<map.C.length; c1++)
@@ -216,7 +217,7 @@ wwv.calc_all_tr = function ( map, CL )
                     {
                         var p1 = map.C[c1].CIT[i1];
                         var p2 = map.C[c2].CIT[i2];
-                        var dist = wwv.calc_target_radius(p1, p2, map, CL);
+                        var dist = map.calc_target_radius(p1, p2, map, CL);
                         if (dist > 175) dist = 175;
                         if (!atr[c1]) atr[c1] = {};
                         if (!atr[c1][i1]) atr[c1][i1] = {};
@@ -231,10 +232,10 @@ wwv.calc_all_tr = function ( map, CL )
 };
 
 // Client: Calculate point in trajectory for display and nuke animation
-wwv.trajectory_interp = function ( p1, p2, t )
+map.trajectory_interp = function ( p1, p2, t )
 {
     var t2 = Math.pow(Math.sin(Math.PI / 2.0 - Math.abs(t - 0.5) * 1.0 * Math.PI), 1.0);
-    var z = wwv.point_dist(p1, p2) * t2 / 8.0;
+    var z = map.point_dist(p1, p2) * t2 / 8.0;
     var p = {
         x: (p2.x - p1.x) * t + p1.x,
         y: (p2.y - p1.y) * t + p1.y - z,
@@ -245,7 +246,7 @@ wwv.trajectory_interp = function ( p1, p2, t )
 };
 
 // Client: Render trajectory
-wwv.render_trajectory = function ( T, bmd )
+map.render_trajectory = function ( T, bmd )
 {
     var ctx = bmd.ctx;
     ctx.strokeStyle = '#ff0000';
@@ -262,11 +263,11 @@ wwv.render_trajectory = function ( T, bmd )
 };
 
 // Client: Compute 100 points on trajectory
-wwv.generate_trajectory = function ( p1, p2 )
+map.generate_trajectory = function ( p1, p2 )
 {
     var interp = function ( t )
     {
-        return wwv.trajectory_interp(p1, p2, t);
+        return map.trajectory_interp(p1, p2, t);
     };
 
     var L = [];
@@ -277,7 +278,7 @@ wwv.generate_trajectory = function ( p1, p2 )
 };
 
 // Client: Render a map
-wwv.render_map = function ( map, img )
+map.render_map = function ( map, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
     var isNew = !img;
@@ -309,7 +310,7 @@ wwv.render_map = function ( map, img )
 };
 
 // Client: Render cities
-wwv.render_cities = function ( map, img, HL, T, NK )
+map.render_cities = function ( map, img, HL, T, NK )
 {
     if (!HL)
         HL = [];
@@ -321,7 +322,7 @@ wwv.render_cities = function ( map, img, HL, T, NK )
     sprb.anchor.set(0.5);
     var sprd = game.make.sprite(0, 0, 'building-destroyed');
     sprd.anchor.set(0.5);
-    
+
     for (var i=0; i<map.C.length; i++)
     {
         for (var j=0; j<map.C[i].CIT.length; j++)
@@ -355,7 +356,7 @@ wwv.render_cities = function ( map, img, HL, T, NK )
         }
     }
     if (T)
-        wwv.render_trajectory(T, img);
+        map.render_trajectory(T, img);
     if (NK)
     {
         var spr = game.make.sprite(0, 0, 'nuke');
@@ -381,11 +382,11 @@ wwv.render_cities = function ( map, img, HL, T, NK )
 };
 
 // Server: Generate clouds (W) & (H) no need to set
-wwv.generate_clouds = function ( W, H )
+map.generate_clouds = function ( W, H )
 {
     if (!W) W = 800;
     if (!H) H = 800;
-    
+
     var rand_point = function ( ) {
         var CSIZE = 0;
         var ret = {};
@@ -424,7 +425,7 @@ wwv.generate_clouds = function ( W, H )
 };
 
 // Client: Render clouds
-wwv.render_clouds = function ( list, img )
+map.render_clouds = function ( list, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
     var isNew = !img;
