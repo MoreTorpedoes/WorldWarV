@@ -14,10 +14,10 @@ WWVEvents = {
   JOIN_ROOM: 'join room',
   ROOM_JOINED: 'room joined',
   ROOM_JOIN_FAILED: 'room join failed',
-  
+
   SET_ALIAS: 'set alias',
   ALIAS_SET: 'alias set',
-  
+
   LEAVE_ROOM: 'leave room',
   ROOM_LEFT: 'left room',
   LEAVE_ROOM_ERROR: 'leave room error',
@@ -46,8 +46,8 @@ module.exports = -> # main
   }
   primus.use('emit', require('primus-emit'))
 
-  # save the client side library 
-  primus.save "client/primus/primus.js"
+  # save the client side library
+  primus.save "client/primus.js"
 
   # a new connection has been recieved
   primus.on 'connection', (spark) ->
@@ -69,7 +69,7 @@ module.exports = -> # main
       spark.emit(WWVEvents.ALIAS_SET, user)
 
     # creates a room and ads the user that created
-    # the room to the room. 
+    # the room to the room.
     spark.on WWVEvents.CREATE_ROOM, (data) ->
       # ensure the room name isn't already taken
       if data.name not of rooms
@@ -84,7 +84,7 @@ module.exports = -> # main
         }
         # emit an event stating the room has been created
         spark.emit(WWVEvents.ROOM_CREATED, room)
-      else 
+      else
         spark.emit(WWVEvents.ROOM_CREATE_FAILED, {
           message: "#{data.name} is already taken."
         })
@@ -98,12 +98,12 @@ module.exports = -> # main
 
       if data.name of rooms and (summerizeUser(user, rooms[data.name].users.length) not in rooms[data.name].users)
         user.room = room = rooms[data.name] # room joining
-        
+
         user.teamNumber = room.users.length
         room.users.push(summerizeUser(user, room.users.length))
         room.users.forEach (roomUser) -> # push current state of room
           if roomUser.id != spark.id
-            #console.log users[roomUser.id] 
+            #console.log users[roomUser.id]
             users[roomUser.id].spark.emit(WWVEvents.ROOM_UPDATED, {
               teamNumber: user.teamNumber
               room: room
@@ -136,14 +136,14 @@ module.exports = -> # main
         delete user.room
         # inform the requesting user they have left the room
         spark.emit(WWVEvents.ROOM_LEFT)
-      else 
+      else
         # the users was not a member of a room
         spark.emit(WWVEvents.LEAVE_ROOM_ERROR, {
           message: 'User does not currently belong to a room'
         })
 
     # client requesting current user data
-    spark.on WWVEvents.GET_USER, -> 
+    spark.on WWVEvents.GET_USER, ->
       console.log 'GET_USER'
       spark.emit WWVEvents.USER, user
 

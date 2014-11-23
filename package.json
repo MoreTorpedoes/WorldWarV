@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "The HTML5 Volta Style total nuclear war simulator 2015.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dreid93/WorldWarV.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Dawson & Chris",
   "license": "ISC",
   "dependencies": {
     "coffee-script": "^1.8.0",
@@ -15,7 +19,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "load-grunt-tasks": "^1.0.0",
     "lodash": "^2.4.1",
-    "primus": "^2.4.10",
+    "primus": "^2.4.12",
     "primus-emit": "^0.1.2",
     "primus-emitter": "^3.0.3",
     "primus-multiplex": "^3.0.3",
