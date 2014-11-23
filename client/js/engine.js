@@ -11,7 +11,7 @@ global.wwv = wwv;
 
 // import modules
 wwv.particle  = require('./particle.js');
-wwv.map       = require('./map.js');
+wwv.mapgen       = require('./mapgen.js');
 
 wwv.W = 800;
 wwv.H = 800;
@@ -166,7 +166,7 @@ wwv.update = function ( )
                     );
                 }
 
-                wwv.cityImage = wwv.render_cities(wwv.map, wwv.cityImage, HL, wwv.game_state.selTraj);
+                wwv.cityImage = wwv.mapgen.render_cities(wwv.map, wwv.cityImage, HL, wwv.game_state.selTraj);
             }
         }
     }
@@ -220,14 +220,14 @@ wwv.update = function ( )
             wwv.particle.fire_particle( { x: NK[i].x - Math.cos(a2) * NK[i].z * 20, y: NK[i].sy - Math.sin(a2) * NK[i].z * 20, z: NK[i].z * 60.0 }, { x: Math.cos(a2), y: Math.sin(a2), z: 0.0 }, null, 0xffff00, null, 0.75);
         }
 
-        wwv.cityImage = wwv.render_cities(wwv.map, wwv.cityImage, [], null, NK);
+        wwv.cityImage = wwv.mapgen.render_cities(wwv.map, wwv.cityImage, [], null, NK);
 
         if (NK.length === 0)
         {
             wwv.game_state.nukes = null;
             wwv.game_state.picking = true;
             wwv.clouds = wwv.generate_clouds(800, 800);
-            wwv.cloudImg = wwv.render_clouds(wwv.clouds, wwv.cloudImg);
+            wwv.cloudImg = wwv.mapgen.render_clouds(wwv.clouds, wwv.cloudImg);
         }
     }
     else if (wwv.fireInfo)
@@ -263,7 +263,7 @@ wwv.update = function ( )
             );
         }
 
-        wwv.cityImage = wwv.render_cities(wwv.map, wwv.cityImage, HL, wwv.game_state.selTraj);
+        wwv.cityImage = wwv.mapgen.render_cities(wwv.map, wwv.cityImage, HL, wwv.game_state.selTraj);
     }
 
     var map = wwv.map;

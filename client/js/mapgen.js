@@ -1,16 +1,16 @@
 // WWV - Client Side - Map gen and render
 
-var map = map || {};
-module.exports = map;
+var mapgen = mapgen || {};
+module.exports = mapgen;
 
 // Client & server: Returns distance between two points
-map.point_dist = function ( p1, p2 )
+mapgen.point_dist = function ( p1, p2 )
 {
     return Math.sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
 };
 
 // Client & server: Picks a random angle given a radius (acc) and offsets by (p)
-map.rp_radius_offset = function ( p, acc )
+mapgen.rp_radius_offset = function ( p, acc )
 {
     var r = acc;
     var a = Math.random() * Math.PI * 2.0;
@@ -18,7 +18,7 @@ map.rp_radius_offset = function ( p, acc )
 };
 
 // Server: Generates map & city locations & populations, with (players) 2-4, W and H no need to set in call
-map.create_map = function ( players, W, H )
+mapgen.create_map = function ( players, W, H )
 {
     if (!W) W = 800;
     if (!H) H = 800;
@@ -50,7 +50,7 @@ map.create_map = function ( players, W, H )
             var any = false;
             for (var j=0; j<C.length && !any; j++)
             {
-                var P = map.point_dist(p, C[j]) / CDIST;
+                var P = mapgen.point_dist(p, C[j]) / CDIST;
                 if (P < 2.0 || P > 12.0)
                     any = true;
             }
@@ -58,10 +58,10 @@ map.create_map = function ( players, W, H )
                 break;
         }
         if (k <= 0)
-            return map.create_map(players, W, H);
+            return mapgen.create_map(players, W, H);
         C.push(p);
     }
-    map.C = C;
+    mapgen.C = C;
 
     var NL = 200;
     var NS = 1;
@@ -87,7 +87,7 @@ map.create_map = function ( players, W, H )
                 var minMe = W*W;
                 for (var i=0; i<C[c].L.length; i++)
                 {
-                    var P = map.point_dist(C[c].L[i], p);
+                    var P = mapgen.point_dist(C[c].L[i], p);
                     minMe = Math.min(minMe, P);
                     if (P < (20*NS+20*C[c].L[i].scale))
                         any = true;
@@ -100,7 +100,7 @@ map.create_map = function ( players, W, H )
                     {
                         for (var i=0; i<C[c2].L.length && !any; i++)
                         {
-                            if (map.point_dist(C[c2].L[i], p) < CDIST)
+                            if (mapgen.point_dist(C[c2].L[i], p) < CDIST)
                                 any = true;
                         }
                     }
@@ -141,12 +141,12 @@ map.create_map = function ( players, W, H )
                 {
                     chosen = idx;
                     for (var i=0; i<L.length; i++)
-                        if (map.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 100))
+                        if (mapgen.point_dist(L[i], C[c].L[idx]) < (k<0 ? 15 : 100))
                             chosen = null;
                 }
                 k --;
                 if (k <= 1)
-                    return map.create_map(players, W, H);
+                    return mapgen.create_map(players, W, H);
             }
             L.push({
                 x: C[c].L[chosen].x,
@@ -169,13 +169,13 @@ map.create_map = function ( players, W, H )
 };
 
 // Server: Calculate target accuracy radius between (p1) and (p2) given (map) and (CL)ouds
-map.calc_target_radius = function ( p1, p2, map, CL )
+mapgen.calc_target_radius = function ( p1, p2, map, CL )
 {
     var dist = 4.0;
 
-    var DF = map.point_dist(p1, p2) / 50.0; // distance factor
+    var DF = mapgen.point_dist(p1, p2) / 50.0; // distance factor
 
-    var len = map.point_dist(p1, p2);
+    var len = mapgen.point_dist(p1, p2);
     var dx = (p2.x - p1.x) / len;
     var dy = (p2.y - p1.y) / len;
 
@@ -185,7 +185,7 @@ map.calc_target_radius = function ( p1, p2, map, CL )
         for (var c=0; c<map.C.length; c++)
             for (var i=0; i<map.C[c].L.length; i++)
             {
-                var d = map.point_dist(map.C[c].L[i], p) - map.C[c].L[i].scale * 60;
+                var d = mapgen.point_dist(map.C[c].L[i], p) - map.C[c].L[i].scale * 60;
                 if (d < 0)
                 {
                     var green = Math.pow(1.0 - map.C[c].L[i].scale, 0.5);
@@ -194,7 +194,7 @@ map.calc_target_radius = function ( p1, p2, map, CL )
             }
         for (var i=0; i<CL.length; i++)
         {
-            var d = map.point_dist(CL[i], p) - CL[i].radius;
+            var d = mapgen.point_dist(CL[i], p) - CL[i].radius;
             if (d < 0)
             {
                 dist += CL[i].radius / 128.0;
@@ -206,7 +206,7 @@ map.calc_target_radius = function ( p1, p2, map, CL )
 };
 
 // Server: Calculate a matrix of accuracy radii between all pairs of enemy cities given (map) and (CL)ouds
-map.calc_all_tr = function ( map, CL )
+mapgen.calc_all_tr = function ( map, CL )
 {
     var atr = {};
     for (var c1=0; c1<map.C.length; c1++)
@@ -232,10 +232,10 @@ map.calc_all_tr = function ( map, CL )
 };
 
 // Client: Calculate point in trajectory for display and nuke animation
-map.trajectory_interp = function ( p1, p2, t )
+mapgen.trajectory_interp = function ( p1, p2, t )
 {
     var t2 = Math.pow(Math.sin(Math.PI / 2.0 - Math.abs(t - 0.5) * 1.0 * Math.PI), 1.0);
-    var z = map.point_dist(p1, p2) * t2 / 8.0;
+    var z = mapgen.point_dist(p1, p2) * t2 / 8.0;
     var p = {
         x: (p2.x - p1.x) * t + p1.x,
         y: (p2.y - p1.y) * t + p1.y - z,
@@ -246,7 +246,7 @@ map.trajectory_interp = function ( p1, p2, t )
 };
 
 // Client: Render trajectory
-map.render_trajectory = function ( T, bmd )
+mapgen.render_trajectory = function ( T, bmd )
 {
     var ctx = bmd.ctx;
     ctx.strokeStyle = '#ff0000';
@@ -263,11 +263,11 @@ map.render_trajectory = function ( T, bmd )
 };
 
 // Client: Compute 100 points on trajectory
-map.generate_trajectory = function ( p1, p2 )
+mapgen.generate_trajectory = function ( p1, p2 )
 {
     var interp = function ( t )
     {
-        return map.trajectory_interp(p1, p2, t);
+        return mapgen.trajectory_interp(p1, p2, t);
     };
 
     var L = [];
@@ -278,7 +278,7 @@ map.generate_trajectory = function ( p1, p2 )
 };
 
 // Client: Render a map
-map.render_map = function ( map, img )
+mapgen.render_map = function ( map, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
     var isNew = !img;
@@ -310,7 +310,7 @@ map.render_map = function ( map, img )
 };
 
 // Client: Render cities
-map.render_cities = function ( map, img, HL, T, NK )
+mapgen.render_cities = function ( map, img, HL, T, NK )
 {
     if (!HL)
         HL = [];
@@ -356,7 +356,7 @@ map.render_cities = function ( map, img, HL, T, NK )
         }
     }
     if (T)
-        map.render_trajectory(T, img);
+        mapgen.render_trajectory(T, img);
     if (NK)
     {
         var spr = game.make.sprite(0, 0, 'nuke');
@@ -382,7 +382,7 @@ map.render_cities = function ( map, img, HL, T, NK )
 };
 
 // Server: Generate clouds (W) & (H) no need to set
-map.generate_clouds = function ( W, H )
+mapgen.generate_clouds = function ( W, H )
 {
     if (!W) W = 800;
     if (!H) H = 800;
@@ -425,7 +425,7 @@ map.generate_clouds = function ( W, H )
 };
 
 // Client: Render clouds
-map.render_clouds = function ( list, img )
+mapgen.render_clouds = function ( list, img )
 {
     var game = wwv.game, W = wwv.W, H = wwv.H;
     var isNew = !img;
