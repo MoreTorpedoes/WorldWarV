@@ -22,7 +22,7 @@
     "primus-rooms": "^3.1.0",
     "primus.io": "^3.1.2",
     "websockets": "^0.2.0",
-    "ws": "^0.4.32"
+    "ws": "^3.3.1"
   },
   "devDependencies": {
     "connect-livereload": "^0.5.0",
