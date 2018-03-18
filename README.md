@@ -17,4 +17,4 @@ Run `gulp` to serve the client side content.
 ## Authors
 
 - Chris Adams
-- Dawson Reid <dreid93@gmail.com>
+- Dawson Reid
