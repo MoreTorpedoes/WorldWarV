@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "coffee-script": "^1.8.0",
-    "lodash": "^2.4.1",
+    "lodash": "^4.17.5",
     "primus": "^2.4.12",
     "primus-emit": "^0.1.2",
     "primus-emitter": "^3.0.3",
